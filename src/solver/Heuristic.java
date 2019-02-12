@@ -27,8 +27,9 @@ public class Heuristic {
 
     private Source[] sources;
     private Sink[] sinks;
+    
+    // Graph
     private int[] graphVertices;
-
     HeuristicEdge[][] adjacencyMatrix;
     HashMap<Integer, Integer> cellNumToVertexNum;
 
@@ -38,7 +39,17 @@ public class Heuristic {
         sources = data.getSources();
         sinks = data.getSinks();
         graphVertices = data.getGraphVertices();
+    }
 
+    public void heuristic() {
+        // Initialize sources and sinks
+        for (Source src : sources) {
+            src.setRemainingCapacity(src.getProductionRate());
+        }
+        for (Sink snk : sinks) {
+            snk.setRemainingCapacity(snk.getCapacity());
+        }
+        
         // Make directed edge graph
         Set<Edge> originalEdges = data.getGraphEdgeCosts().keySet();
         adjacencyMatrix = new HeuristicEdge[graphVertices.length][graphVertices.length];
@@ -48,13 +59,17 @@ public class Heuristic {
             for (int v = 0; v < graphVertices.length; v++) {
                 if (originalEdges.contains(new Edge(graphVertices[u], graphVertices[v]))) {
                     adjacencyMatrix[u][v] = new HeuristicEdge(graphVertices[u], graphVertices[v], data);
+                    adjacencyMatrix[u][v].currentHostingAmount = 0;
+                    adjacencyMatrix[u][v].currentSize = 0;
                 }
             }
         }
-    }
-
-    public void heuristic() {
-        // heuristic code
+        
+        double amountCaptured = 0;  // Amount of CO2 currently captured/injected by algorithm
+        
+        // Make cost array
+        
+        // Schedule cheapest
     }
 
     // Dijkstra to run on graph edges
@@ -110,7 +125,6 @@ public class Heuristic {
 
         public int cellNum;
         public double distance;
-        public boolean connected = false;
 
         public Data(int cellNum, double distance) {
             this.cellNum = cellNum;
