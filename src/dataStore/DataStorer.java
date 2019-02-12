@@ -49,6 +49,9 @@ public class DataStorer {
     private HashSet<Edge> delaunayPairs;
 
     private HashMap<Edge, ArrayList<Edge>> sourceSinkRoutes;
+    
+    private double targetCaptureAmount;     // Heuristic
+    private double crf;     //Heuristic
 
     public DataStorer(String basePath, String dataset, String scenario) {
         this.basePath = basePath;
@@ -419,8 +422,28 @@ public class DataStorer {
     public double[][] getModifiedAdjacencyCosts() {
         return modifiedAdjacencyCosts;
     }
+    
+    // Heuristic
+    public double getTargetCaptureAmount() {
+        return targetCaptureAmount;
+    }
+    
+    // Heuristic
+    public double getCrf() {
+        return crf;
+    }
 
     // Data element set methods
+    // Heuristic
+    public void setCrf(double crf) {
+        this.crf = crf;
+    }
+    
+    // Heuristic
+    public void setTargetCaptureAmount(double amt) {
+        targetCaptureAmount = amt;
+    }
+    
     public void setWidth(int width) {
         this.width = width;
     }

@@ -255,6 +255,8 @@ public class ControlActions {
     public void generateMPSFile(String crf, String numYears, String capacityTarget) {
         if (scenario != "") {
             System.out.println("Writing MPS File...");
+            data.setTargetCaptureAmount(Double.parseDouble(capacityTarget));    //Heuristic
+            data.setCrf(Double.parseDouble(crf));   //Heuristic
             MPSWriter.writeMPS("mip.mps", data, Double.parseDouble(crf), Double.parseDouble(numYears), Double.parseDouble(capacityTarget), basePath, dataset, scenario);
         }
     }
@@ -480,6 +482,8 @@ public class ControlActions {
             // sink capacity.
             // injection cost.
             // STDDEV = 1/4 mean
+            data.setTargetCaptureAmount(Double.parseDouble(capacityTarget));    //Heuristic
+            data.setCrf(Double.parseDouble(crf));   //Heuristic
             MPSWriter.writeMPS("mip" + i + ".mps", data, Double.parseDouble(crf), Double.parseDouble(numYears), Double.parseDouble(capacityTarget), basePath, dataset, scenario);
         }
         for (int j = 0; j < sinks.length; j++) {
