@@ -75,6 +75,7 @@ public class Heuristic {
         Pair[][] pairCosts = makePairwiseCostArray();
         
         // Schedule cheapest
+        //TODO
     }
     
     public Pair[][] makePairwiseCostArray() {
@@ -116,6 +117,7 @@ public class Heuristic {
         return pairCosts;
     }
     
+    // For a given src/snk pair, set the cost of the edgs to carry transferAmount of CO2
     public void setGraphCosts(Source src, Sink snk, double transferAmount) {
         for (int u = 0; u < graphVertices.length; u++) {
             for (int v = 0; v < graphVertices.length; v++) {
@@ -123,8 +125,27 @@ public class Heuristic {
                 HeuristicEdge backEdge = adjacencyMatrix[v][u];
                 double edgeCost = 0;
                 
+                // If edge in opposite direction is hosting flow
                 if (backEdge.currentHostingAmount > 0) {
-                    //TODO
+                    // Remove back edge (because it will need to change)
+                    edgeCost -= backEdge.buildCost[backEdge.currentSize];
+                    edgeCost -= backEdge.currentHostingAmount * backEdge.transportCost[backEdge.currentSize];
+                    
+                    // If the back edge is still needed
+                    if (transferAmount < backEdge.currentHostingAmount) {
+                        // Calculate the new pipeline size
+                        int newSize = getNewPipelineSize(backEdge, backEdge.currentHostingAmount - transferAmount);
+                        
+                        // Factor in build costs
+                        edgeCost += backEdge.buildCost[newSize];
+                        
+                        // Factor in utilization costs
+                        edgeCost += backEdge.transportCost[newSize] * (backEdge.currentHostingAmount - transferAmount);
+                    } else if (transferAmount > backEdge.currentHostingAmount) {    //If front edge is now needed
+                        int newSize = getNewPipelineSize(frontEdge, transferAmount - backEdge.currentHostingAmount);
+                        edgeCost += frontEdge.buildCost[newSize];
+                        edgeCost += frontEdge.transportCost[newSize] * (transferAmount - backEdge.currentHostingAmount);
+                    }
                 } else {
                     int newSize = getNewPipelineSize(frontEdge, transferAmount + frontEdge.currentHostingAmount);
                     edgeCost += frontEdge.buildCost[newSize] - frontEdge.buildCost[frontEdge.currentSize];
