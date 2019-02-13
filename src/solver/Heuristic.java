@@ -68,8 +68,39 @@ public class Heuristic {
         double amountCaptured = 0;  // Amount of CO2 currently captured/injected by algorithm
         
         // Make cost array
+        Pair[][] pairCosts = makePairwiseCostArray();
         
         // Schedule cheapest
+    }
+    
+    public Pair[][] makePairwiseCostArray() {
+        Pair[][] pairCosts = new Pair[sources.length][sinks.length];
+        for (int srcNum = 0; srcNum < sources.length; srcNum++) {
+            for (int snkNum = 0; snkNum < sinks.length; snkNum++) {
+                Source src = sources[srcNum];
+                Sink snk = sinks[snkNum];
+                
+                double transferAmount = Math.min(src.getRemainingCapacity(), snk.getRemainingCapacity());
+                double cost = 0;
+                
+                // Incurr opening cost if source not yet used
+                if (src.getRemainingCapacity() == src.getProductionRate()) {
+                    cost += src.getOpeningCost(data.getCrf());
+                }
+                
+                // Incurr opening cost if sink not yet used
+                if (snk.getRemainingCapacity() == snk.getCapacity()) {
+                    cost += snk.getOpeningCost(data.getCrf());
+                }
+                
+                cost += transferAmount * src.getCaptureCost();
+                cost += transferAmount * snk.getInjectionCost();
+                
+                // Assign costs to graph
+                
+            }
+        }
+        return pairCosts;
     }
 
     // Dijkstra to run on graph edges
@@ -144,5 +175,10 @@ public class Heuristic {
         public boolean equals(Data other) {
             return distance == other.distance;
         }
+    }
+    
+    private class Pair {
+        HashSet<HeuristicEdge> path;
+        double cost;
     }
 }
