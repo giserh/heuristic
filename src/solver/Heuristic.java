@@ -97,10 +97,23 @@ public class Heuristic {
                 cost += transferAmount * snk.getInjectionCost();
                 
                 // Assign costs to graph
+                setGraphCosts(src, snk, transferAmount);
                 
+                // Find shortest path between src and snk
+                Object[] data = dijkstra(src, snk);
+                HashSet<HeuristicEdge> path = (HashSet<HeuristicEdge>) data[0];
+                double pathCost = (double) data[1];
+                
+                cost += pathCost;
+                
+                pairCosts[srcNum][snkNum] = new Pair(path, cost);
             }
         }
         return pairCosts;
+    }
+    
+    public void setGraphCosts(Source src, Sink snk, double transferAmount) {
+        //TODO
     }
 
     // Dijkstra to run on graph edges
@@ -140,15 +153,16 @@ public class Heuristic {
             }
 
         }
-        ArrayList<Integer> pathList = new ArrayList<>();
+        
+        HashSet<HeuristicEdge> path = new HashSet<>();
         int node = snkVertexNum;
         while (node != srcVertexNum) {
-            pathList.add(0, node);
-            node = previous[node];
+            int previousNode = previous[node];
+            path.add(adjacencyMatrix[previousNode][node]);
+            node = previousNode;
         }
-        pathList.add(0, node);
+        path.add(adjacencyMatrix[srcVertexNum][node]);
 
-        int[] path = convertIntegerArray(pathList.toArray(new Integer[0]));
         return new Object[]{path, costs[snkVertexNum]};
     }
 
@@ -178,7 +192,12 @@ public class Heuristic {
     }
     
     private class Pair {
-        HashSet<HeuristicEdge> path;
-        double cost;
+        public HashSet<HeuristicEdge> path;
+        public double cost;
+        
+        public Pair(HashSet<HeuristicEdge> path, double cost) {
+            this.path = path;
+            this.cost = cost;
+        }
     }
 }
