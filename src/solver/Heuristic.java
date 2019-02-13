@@ -27,7 +27,7 @@ public class Heuristic {
 
     private Source[] sources;
     private Sink[] sinks;
-    
+
     // Graph
     private int[] graphVertices;
     HeuristicEdge[][] adjacencyMatrix;
@@ -49,7 +49,7 @@ public class Heuristic {
         for (Sink snk : sinks) {
             snk.setRemainingCapacity(snk.getCapacity());
         }
-        
+
         // Make directed edge graph
         Set<Edge> originalEdges = data.getGraphEdgeCosts().keySet();
         adjacencyMatrix = new HeuristicEdge[graphVertices.length][graphVertices.length];
@@ -61,62 +61,116 @@ public class Heuristic {
                     adjacencyMatrix[u][v] = new HeuristicEdge(graphVertices[u], graphVertices[v], data);
                     adjacencyMatrix[u][v].currentHostingAmount = 0;
                     adjacencyMatrix[u][v].currentSize = 0;
-                    
-                    adjacencyMatrix[v][u] = new HeuristicEdge(graphVertices[u], graphVertices[v], data);
+
+                    adjacencyMatrix[v][u] = new HeuristicEdge(graphVertices[v], graphVertices[u], data);
                     adjacencyMatrix[v][u].currentHostingAmount = 0;
                     adjacencyMatrix[v][u].currentSize = 0;
                 }
             }
         }
-        
+
         double amountCaptured = 0;  // Amount of CO2 currently captured/injected by algorithm
-        
-        // Make cost array
-        Pair[][] pairCosts = makePairwiseCostArray();
-        
-        // Schedule cheapest
-        //TODO
+
+        while (amountCaptured < data.getTargetCaptureAmount()) {
+            // Make cost array
+            Pair[][] pairCosts = makePairwiseCostArray();
+
+            // Schedule cheapest
+            Pair cheapest = new Pair(null, null, null, Double.MAX_VALUE);
+            for (int srcNum = 0; srcNum < sources.length; srcNum++) {
+                for (int snkNum = 0; snkNum < sinks.length; snkNum++) {
+                    if (pairCosts[srcNum][snkNum].cost < cheapest.cost) {
+                        cheapest = pairCosts[srcNum][snkNum];
+                    }
+                }
+            }
+            amountCaptured += Math.min(cheapest.src.getRemainingCapacity(), cheapest.snk.getRemainingCapacity());
+            schedulePair(cheapest.src, cheapest.snk, cheapest.path);
+        }
     }
-    
+
+    public void schedulePair(Source src, Sink snk, HashSet<HeuristicEdge> path) {
+        double transferAmount = Math.min(src.getRemainingCapacity(), snk.getRemainingCapacity());
+
+        src.setRemainingCapacity(src.getRemainingCapacity() - transferAmount);
+        snk.setRemainingCapacity(snk.getRemainingCapacity() - transferAmount);
+
+        for (HeuristicEdge frontEdge : path) {
+            HeuristicEdge backEdge = adjacencyMatrix[frontEdge.v2][frontEdge.v1];
+
+            // If edge in opposite direction was hosting flow
+            if (backEdge.currentHostingAmount > 0) {
+                // If the back edge is still needed
+                if (transferAmount < backEdge.currentHostingAmount) {
+                    // Calculate the new pipeline size
+                    int newSize = getNewPipelineSize(backEdge, backEdge.currentHostingAmount - transferAmount);
+
+                    // Update pipeline size
+                    backEdge.currentSize = newSize;
+
+                    // Update hosting amount
+                    backEdge.currentHostingAmount -= transferAmount;
+                } else if (transferAmount > backEdge.currentHostingAmount) {    //If front edge is now needed
+                    backEdge.currentSize = 0;
+                    backEdge.currentHostingAmount = 0;
+
+                    int newSize = getNewPipelineSize(frontEdge, transferAmount - backEdge.currentHostingAmount);
+                    frontEdge.currentSize = newSize;
+                    frontEdge.currentHostingAmount = transferAmount - backEdge.currentHostingAmount;
+                } else {
+                    backEdge.currentSize = 0;
+                    backEdge.currentHostingAmount = 0;
+                }
+            } else {
+                int newSize = getNewPipelineSize(frontEdge, transferAmount + frontEdge.currentHostingAmount);
+                frontEdge.currentSize = newSize;
+                frontEdge.currentHostingAmount += transferAmount;
+            }
+        }
+    }
+
     public Pair[][] makePairwiseCostArray() {
         Pair[][] pairCosts = new Pair[sources.length][sinks.length];
         for (int srcNum = 0; srcNum < sources.length; srcNum++) {
             for (int snkNum = 0; snkNum < sinks.length; snkNum++) {
                 Source src = sources[srcNum];
                 Sink snk = sinks[snkNum];
-                
+
                 double transferAmount = Math.min(src.getRemainingCapacity(), snk.getRemainingCapacity());
                 double cost = 0;
-                
+
                 // Incurr opening cost if source not yet used
                 if (src.getRemainingCapacity() == src.getProductionRate()) {
                     cost += src.getOpeningCost(data.getCrf());
                 }
-                
+
                 // Incurr opening cost if sink not yet used
                 if (snk.getRemainingCapacity() == snk.getCapacity()) {
                     cost += snk.getOpeningCost(data.getCrf());
                 }
-                
+
                 cost += transferAmount * src.getCaptureCost();
                 cost += transferAmount * snk.getInjectionCost();
-                
+
                 // Assign costs to graph
                 setGraphCosts(src, snk, transferAmount);
-                
+
                 // Find shortest path between src and snk
                 Object[] data = dijkstra(src, snk);
                 HashSet<HeuristicEdge> path = (HashSet<HeuristicEdge>) data[0];
                 double pathCost = (double) data[1];
-                
+
                 cost += pathCost;
-                
-                pairCosts[srcNum][snkNum] = new Pair(path, cost);
+
+                // Cost per ton of CO2
+                cost /= transferAmount;
+
+                pairCosts[srcNum][snkNum] = new Pair(src, snk, path, cost);
             }
         }
         return pairCosts;
     }
-    
+
     // For a given src/snk pair, set the cost of the edgs to carry transferAmount of CO2
     public void setGraphCosts(Source src, Sink snk, double transferAmount) {
         for (int u = 0; u < graphVertices.length; u++) {
@@ -124,21 +178,21 @@ public class Heuristic {
                 HeuristicEdge frontEdge = adjacencyMatrix[u][v];
                 HeuristicEdge backEdge = adjacencyMatrix[v][u];
                 double edgeCost = 0;
-                
+
                 // If edge in opposite direction is hosting flow
                 if (backEdge.currentHostingAmount > 0) {
                     // Remove back edge (because it will need to change)
                     edgeCost -= backEdge.buildCost[backEdge.currentSize];
                     edgeCost -= backEdge.currentHostingAmount * backEdge.transportCost[backEdge.currentSize];
-                    
+
                     // If the back edge is still needed
                     if (transferAmount < backEdge.currentHostingAmount) {
                         // Calculate the new pipeline size
                         int newSize = getNewPipelineSize(backEdge, backEdge.currentHostingAmount - transferAmount);
-                        
+
                         // Factor in build costs
                         edgeCost += backEdge.buildCost[newSize];
-                        
+
                         // Factor in utilization costs
                         edgeCost += backEdge.transportCost[newSize] * (backEdge.currentHostingAmount - transferAmount);
                     } else if (transferAmount > backEdge.currentHostingAmount) {    //If front edge is now needed
@@ -155,7 +209,7 @@ public class Heuristic {
             }
         }
     }
-    
+
     public int getNewPipelineSize(HeuristicEdge edge, double volume) {
         double[] capacities = edge.capacities;
         int size = 0;
@@ -202,7 +256,7 @@ public class Heuristic {
             }
 
         }
-        
+
         HashSet<HeuristicEdge> path = new HashSet<>();
         int node = snkVertexNum;
         while (node != srcVertexNum) {
@@ -239,12 +293,17 @@ public class Heuristic {
             return distance == other.distance;
         }
     }
-    
+
     private class Pair {
+
         public HashSet<HeuristicEdge> path;
         public double cost;
-        
-        public Pair(HashSet<HeuristicEdge> path, double cost) {
+        public Source src;
+        public Sink snk;
+
+        public Pair(Source src, Sink snk, HashSet<HeuristicEdge> path, double cost) {
+            this.src = src;
+            this.snk = snk;
             this.path = path;
             this.cost = cost;
         }
