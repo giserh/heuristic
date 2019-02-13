@@ -17,7 +17,7 @@ public class HeuristicEdge {
     public double[] capacities;       //capacity at each size
     public int currentSize;     //size 0 means no pipeline
     
-    private double cost;
+    public double cost;
 
     public DataStorer data;
 
@@ -61,13 +61,5 @@ public class HeuristicEdge {
             double cost = (linearComponents[c].getConAlpha() * edgeConstructionCosts.get(new Edge(v1, v2)) + linearComponents[c].getRowAlpha() * edgeRightOfWayCosts.get(new Edge(v1, v2))) * data.getCrf() / .93;    //.93 = pipeline utilization
             transportCost[c + 1] = cost;
         }
-    }
-
-    public double getCost() {
-        return cost;
-    }
-    
-    public void setCost(double cost) {
-        this.cost = cost;
     }
 }

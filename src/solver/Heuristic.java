@@ -61,6 +61,10 @@ public class Heuristic {
                     adjacencyMatrix[u][v] = new HeuristicEdge(graphVertices[u], graphVertices[v], data);
                     adjacencyMatrix[u][v].currentHostingAmount = 0;
                     adjacencyMatrix[u][v].currentSize = 0;
+                    
+                    adjacencyMatrix[v][u] = new HeuristicEdge(graphVertices[u], graphVertices[v], data);
+                    adjacencyMatrix[v][u].currentHostingAmount = 0;
+                    adjacencyMatrix[v][u].currentSize = 0;
                 }
             }
         }
@@ -113,7 +117,31 @@ public class Heuristic {
     }
     
     public void setGraphCosts(Source src, Sink snk, double transferAmount) {
-        //TODO
+        for (int u = 0; u < graphVertices.length; u++) {
+            for (int v = 0; v < graphVertices.length; v++) {
+                HeuristicEdge frontEdge = adjacencyMatrix[u][v];
+                HeuristicEdge backEdge = adjacencyMatrix[v][u];
+                double edgeCost = 0;
+                
+                if (backEdge.currentHostingAmount > 0) {
+                    //TODO
+                } else {
+                    int newSize = getNewPipelineSize(frontEdge, transferAmount + frontEdge.currentHostingAmount);
+                    edgeCost += frontEdge.buildCost[newSize] - frontEdge.buildCost[frontEdge.currentSize];
+                    edgeCost += frontEdge.transportCost[newSize] * (transferAmount + frontEdge.currentHostingAmount) - frontEdge.transportCost[frontEdge.currentSize] * (frontEdge.currentHostingAmount);
+                }
+                frontEdge.cost = edgeCost;
+            }
+        }
+    }
+    
+    public int getNewPipelineSize(HeuristicEdge edge, double volume) {
+        double[] capacities = edge.capacities;
+        int size = 0;
+        while (volume < capacities[size]) {
+            size++;
+        }
+        return size;
     }
 
     // Dijkstra to run on graph edges
@@ -141,7 +169,7 @@ public class Heuristic {
             Heuristic.Data u = pQueue.poll();
             for (int neighbor = 0; neighbor < graphVertices.length; neighbor++) {
                 if (adjacencyMatrix[cellNumToVertexNum.get(u.cellNum)][neighbor] != null) {
-                    double altDistance = costs[u.cellNum] + adjacencyMatrix[cellNumToVertexNum.get(u.cellNum)][neighbor].getCost();
+                    double altDistance = costs[u.cellNum] + adjacencyMatrix[cellNumToVertexNum.get(u.cellNum)][neighbor].cost;
                     if (altDistance < costs[neighbor]) {
                         costs[neighbor] = altDistance;
                         previous[neighbor] = cellNumToVertexNum.get(u.cellNum);
