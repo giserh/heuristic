@@ -1,3 +1,3 @@
-17 Jul 2018 - Allow navigation to datasets (i.e. don't crash if jar file is not in same folder as "Datasets" folder).
+Costs look off between OPT and Heuristic
 
-17 Jul 2018 - Make solution reader get project length from MPS file.
+What about if sources/sinks co-located? What about multiple sources at same location?
