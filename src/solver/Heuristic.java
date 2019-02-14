@@ -74,7 +74,6 @@ public class Heuristic {
         double amountCaptured = 0;  // Amount of CO2 currently captured/injected by algorithm
 
         while (amountCaptured < data.getTargetCaptureAmount()) {
-            System.out.println(amountCaptured);
             // Make cost array
             Pair[][] pairCosts = makePairwiseCostArray(data.getTargetCaptureAmount() - amountCaptured);
 
@@ -87,13 +86,13 @@ public class Heuristic {
                     }
                 }
             }
-            amountCaptured += Math.min(Math.min(cheapest.src.getRemainingCapacity(), cheapest.snk.getRemainingCapacity()), data.getTargetCaptureAmount() - amountCaptured);
-            schedulePair(cheapest.src, cheapest.snk, cheapest.path, data.getTargetCaptureAmount() - amountCaptured);
+            double transferAmount = Math.min(Math.min(cheapest.src.getRemainingCapacity(), cheapest.snk.getRemainingCapacity()), data.getTargetCaptureAmount() - amountCaptured);
+            amountCaptured += transferAmount;
+            schedulePair(cheapest.src, cheapest.snk, cheapest.path, transferAmount);
         }
     }
 
-    public void schedulePair(Source src, Sink snk, HashSet<HeuristicEdge> path, double remainingCaptureAmount) {
-        double transferAmount = Math.min(Math.min(src.getRemainingCapacity(), snk.getRemainingCapacity()), remainingCaptureAmount);
+    public void schedulePair(Source src, Sink snk, HashSet<HeuristicEdge> path, double transferAmount) {
 
         src.setRemainingCapacity(src.getRemainingCapacity() - transferAmount);
         snk.setRemainingCapacity(snk.getRemainingCapacity() - transferAmount);

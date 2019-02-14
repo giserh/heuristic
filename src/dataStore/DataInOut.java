@@ -468,8 +468,8 @@ public class DataInOut {
 
             bw.write("Sink\tInjectAmount\tCost\n");
             for (Sink snk : sinks) {
-                if (snk.getRemainingCapacity() < snk.getCapacity()) {
-                    double injectAmount = snk.getCapacity() - snk.getRemainingCapacity();
+                if (snk.getRemainingCapacity() < (snk.getCapacity() / data.getProjectLength())) {
+                    double injectAmount = (snk.getCapacity() / data.getProjectLength()) - snk.getRemainingCapacity();
                     double cost = snk.getOpeningCost(crf) + snk.getInjectionCost() * injectAmount;
                     bw.write(snk.getCellNum() + "\t" + injectAmount + "\t" + cost + "\n");
                 }
