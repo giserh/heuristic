@@ -54,6 +54,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import solver.Heuristic;
 
 /**
  *
@@ -257,8 +258,25 @@ public class ControlActions {
             System.out.println("Writing MPS File...");
             data.setTargetCaptureAmount(Double.parseDouble(capacityTarget));    //Heuristic
             data.setCrf(Double.parseDouble(crf));   //Heuristic
+            data.setProjectLength(Double.parseDouble(numYears));    // Heuristic
             MPSWriter.writeMPS("mip.mps", data, Double.parseDouble(crf), Double.parseDouble(numYears), Double.parseDouble(capacityTarget), basePath, dataset, scenario);
         }
+    }
+
+    // Heuristic
+    public void runHeuristic() {
+        DateFormat dateFormat = new SimpleDateFormat("ddMMyyy-HHmmssss");
+        Date date = new Date();
+        String run = "run" + dateFormat.format(date) + "h";
+        File solutionDirectory = new File(basePath + "/" + dataset + "/Scenarios/" + scenario + "/Results/" + run);
+        solutionDirectory.mkdir();
+        
+        // Run heuristic
+        Heuristic heuristic = new Heuristic(data);
+        heuristic.solve();
+        
+        // Save solution
+        DataInOut.saveHeuristicSolution(solutionDirectory, heuristic);
     }
 
     public void runCPLEX() {
@@ -484,6 +502,7 @@ public class ControlActions {
             // STDDEV = 1/4 mean
             data.setTargetCaptureAmount(Double.parseDouble(capacityTarget));    //Heuristic
             data.setCrf(Double.parseDouble(crf));   //Heuristic
+            data.setProjectLength(Double.parseDouble(numYears));    // Heuristic
             MPSWriter.writeMPS("mip" + i + ".mps", data, Double.parseDouble(crf), Double.parseDouble(numYears), Double.parseDouble(capacityTarget), basePath, dataset, scenario);
         }
         for (int j = 0; j < sinks.length; j++) {
@@ -679,7 +698,7 @@ public class ControlActions {
                         existingRowRoutes.add(newRoute);
                         newRoute = new ArrayList<>();
                         existingROW = false;
-                    } 
+                    }
                     newRoute.add(cell);
                 }
             }
@@ -726,7 +745,7 @@ public class ControlActions {
                 edgeAttributeTable.setType(colNum, DbfTableModel.TYPE_NUMERIC);
             }
         }
-        
+
         for (ArrayList<Integer> route : routes) {
             double[] routeLatLon = new double[route.size() * 2];    // Route cells translated into: lat, lon, lat, lon,...
             for (int i = 0; i < route.size(); i++) {

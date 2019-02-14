@@ -411,7 +411,7 @@ public class Gui extends Application {
         });
 
         // Populate model pane.
-        TitledPane modelContainer = new TitledPane("Problem Formulation", formulationPane);
+        TitledPane modelContainer = new TitledPane("Problem Parameters", formulationPane);  //Heuristic
         modelContainer.setCollapsible(false);
         modelContainer.setPrefSize(192, 152);
         modelContainer.setLayoutX(14);
@@ -423,9 +423,21 @@ public class Gui extends Application {
         solutionPane.setPrefSize(192, 100);
         solutionPane.setMinSize(0, 0);
         
+        // Heuristic
+        Button heuristicSolve = new Button("Solve With Heuristic");
+        heuristicSolve.setLayoutX(22);
+        heuristicSolve.setLayoutY(5);
+        solutionPane.getChildren().add(heuristicSolve);
+        heuristicSolve.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                controlActions.runHeuristic();
+            }
+        });
+        
         Button cplexSolve = new Button("Solve With CPLEX");
         cplexSolve.setLayoutX(28);
-        cplexSolve.setLayoutY(5);
+        cplexSolve.setLayoutY(37);  // Heuristic
         solutionPane.getChildren().add(cplexSolve);
         cplexSolve.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -436,7 +448,7 @@ public class Gui extends Application {
         
         Button gatewaySolve = new Button("Solve With Gateway");
         gatewaySolve.setLayoutX(23);
-        gatewaySolve.setLayoutY(37);
+        gatewaySolve.setLayoutY(69);    // Heuristic
         solutionPane.getChildren().add(gatewaySolve);
         gatewaySolve.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -448,7 +460,7 @@ public class Gui extends Application {
         // Populate solution method pane.
         TitledPane solutionContainer = new TitledPane("Solve Problem", solutionPane);
         solutionContainer.setCollapsible(false);
-        solutionContainer.setPrefSize(192, 97);
+        solutionContainer.setPrefSize(192, 125);    // Heuristic
         solutionContainer.setLayoutX(14);
         solutionContainer.setLayoutY(162);
         modelPane.getChildren().add(solutionContainer);

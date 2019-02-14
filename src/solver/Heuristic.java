@@ -22,7 +22,6 @@ import static utilities.Utilities.convertIntegerArray;
  * @author t92t161
  */
 public class Heuristic {
-
     private DataStorer data;
 
     private Source[] sources;
@@ -30,8 +29,8 @@ public class Heuristic {
 
     // Graph
     private int[] graphVertices;
-    HeuristicEdge[][] adjacencyMatrix;
-    HashMap<Integer, Integer> cellNumToVertexNum;
+    private HeuristicEdge[][] adjacencyMatrix;
+    private HashMap<Integer, Integer> cellNumToVertexNum;
 
     public Heuristic(DataStorer data) {
         this.data = data;
@@ -41,7 +40,7 @@ public class Heuristic {
         graphVertices = data.getGraphVertices();
     }
 
-    public void heuristic() {
+    public void solve() {
         // Initialize sources and sinks
         for (Source src : sources) {
             src.setRemainingCapacity(src.getProductionRate());
@@ -267,6 +266,26 @@ public class Heuristic {
         path.add(adjacencyMatrix[srcVertexNum][node]);
 
         return new Object[]{path, costs[snkVertexNum]};
+    }
+    
+    public Source[] getSources() {
+        return sources;
+    }
+    
+    public Sink[] getSinks() {
+        return sinks;
+    }
+
+    public int[] getGraphVertices() {
+        return graphVertices;
+    }
+    
+    public HeuristicEdge[][] getAdjacencyMatrix() {
+        return adjacencyMatrix;
+    }
+    
+    public HashMap<Integer, Integer> getCellVertexMap() {
+        return cellNumToVertexNum;
     }
 
     private class Data implements Comparable<Data> {

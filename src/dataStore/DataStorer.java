@@ -52,6 +52,7 @@ public class DataStorer {
     
     private double targetCaptureAmount;     // Heuristic
     private double crf;     //Heuristic
+    private double projectLength;   // Heuristic
 
     public DataStorer(String basePath, String dataset, String scenario) {
         this.basePath = basePath;
@@ -432,8 +433,18 @@ public class DataStorer {
     public double getCrf() {
         return crf;
     }
+    
+    // Heuristic
+    public double getProjectLength() {
+        return projectLength;
+    }
 
     // Data element set methods
+    // Heuristic
+    public void setProjectLength(double projectLength) {
+        this.projectLength = projectLength;
+    }
+    
     // Heuristic
     public void setCrf(double crf) {
         this.crf = crf;

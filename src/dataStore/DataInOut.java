@@ -32,6 +32,7 @@ import java.nio.file.StandardCopyOption;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import solver.Heuristic;
 
 /**
  *
@@ -439,6 +440,67 @@ public class DataInOut {
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
+    }
+    
+    // Heuristic
+    public static void saveHeuristicSolution(File solutionDirectory, Heuristic heuristic) {
+        // Collect data.
+        Source[] sources = heuristic.getSources();
+        Sink[] sinks = heuristic.getSinks();
+        int[] graphVertices = heuristic.getGraphVertices();
+        HeuristicEdge[][] adjacencyMatrix = heuristic.getAdjacencyMatrix();
+        HashMap<Integer, Integer> cellNumToVertexNum = heuristic.getCellVertexMap();
+        double crf = data.getCrf();
+        
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(solutionDirectory.toString() + "/solution.txt"))) {
+            bw.write("crf:\t" + crf + "\n");
+            bw.write("captureTarget:\t" + data.getTargetCaptureAmount() + "\n");
+            bw.write("projectLength:\t" + data.getProjectLength() + "\n");
+            
+            bw.write("Source\tCaptureAmount\tCost\n");
+            for (Source src : sources) {
+                if (src.getRemainingCapacity() < src.getProductionRate()) {
+                    double captureAmount = src.getProductionRate() - src.getRemainingCapacity();
+                    double cost = src.getOpeningCost(crf) + src.getCaptureCost() * captureAmount;
+                    bw.write(src.getCellNum() + "\t" + captureAmount + "\t" + cost + "\n");
+                }
+            }
+            
+            bw.write("Sink\tInjectAmount\tCost\n");
+            for (Sink snk : sinks) {
+                if (snk.getRemainingCapacity() < snk.getCapacity()) {
+                    double injectAmount = snk.getCapacity() - snk.getRemainingCapacity();
+                    double cost = snk.getOpeningCost(crf) + snk.getInjectionCost() * injectAmount;
+                    bw.write(snk.getCellNum() + "\t" + injectAmount + "\t" + cost + "\n");
+                }
+            }
+            
+            bw.write("EdgeSrc\tEdgeSnk\tFlowAmount\tCost\n");
+            for (int u = 0; u < graphVertices.length; u++) {
+                for (int v = 0; v < graphVertices.length; v++) {
+                    HeuristicEdge edge = adjacencyMatrix[u][v];
+                    double flowAmount = edge.currentHostingAmount;
+                    double cost = edge.buildCost[edge.currentSize] + edge.transportCost[edge.currentSize] * flowAmount;
+                    bw.write(edge.v1 + "\t" + edge.v2 + "\t" + flowAmount + "\t" + cost + "\n");
+                }
+            }
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+    
+    // Heuristic
+    public static Solution loadHeuristicSolution(String solutionPath) {
+        Solution soln = new Solution();
+        
+        try (BufferedReader br = new BufferedReader(new FileReader(solutionPath.toString() + "/solution.txt"))) {
+            String line = br.readLine();
+            // TODO
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+        
+        return soln;
     }
 
     public static Solution loadSolution(String solutionPath) {
