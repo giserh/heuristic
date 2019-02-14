@@ -511,7 +511,6 @@ public class DataInOut {
             line = br.readLine();
             while (!line.startsWith("Sink")) {
                 String[] sourceComponents = line.split("\t");
-                System.out.println(line);
                 Source source = sources[data.sourceNum(Integer.parseInt(sourceComponents[0]))];
                 double captureAmount = Double.parseDouble(sourceComponents[1]);
                 double cost = Double.parseDouble(sourceComponents[2]);

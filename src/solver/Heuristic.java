@@ -74,8 +74,9 @@ public class Heuristic {
         double amountCaptured = 0;  // Amount of CO2 currently captured/injected by algorithm
 
         while (amountCaptured < data.getTargetCaptureAmount()) {
+            System.out.println(amountCaptured);
             // Make cost array
-            Pair[][] pairCosts = makePairwiseCostArray();
+            Pair[][] pairCosts = makePairwiseCostArray(data.getTargetCaptureAmount() - amountCaptured);
 
             // Schedule cheapest
             Pair cheapest = new Pair(null, null, null, Double.MAX_VALUE);
@@ -86,13 +87,13 @@ public class Heuristic {
                     }
                 }
             }
-            amountCaptured += Math.min(cheapest.src.getRemainingCapacity(), cheapest.snk.getRemainingCapacity());
-            schedulePair(cheapest.src, cheapest.snk, cheapest.path);
+            amountCaptured += Math.min(Math.min(cheapest.src.getRemainingCapacity(), cheapest.snk.getRemainingCapacity()), data.getTargetCaptureAmount() - amountCaptured);
+            schedulePair(cheapest.src, cheapest.snk, cheapest.path, data.getTargetCaptureAmount() - amountCaptured);
         }
     }
 
-    public void schedulePair(Source src, Sink snk, HashSet<HeuristicEdge> path) {
-        double transferAmount = Math.min(src.getRemainingCapacity(), snk.getRemainingCapacity());
+    public void schedulePair(Source src, Sink snk, HashSet<HeuristicEdge> path, double remainingCaptureAmount) {
+        double transferAmount = Math.min(Math.min(src.getRemainingCapacity(), snk.getRemainingCapacity()), remainingCaptureAmount);
 
         src.setRemainingCapacity(src.getRemainingCapacity() - transferAmount);
         snk.setRemainingCapacity(snk.getRemainingCapacity() - transferAmount);
@@ -131,14 +132,14 @@ public class Heuristic {
         }
     }
 
-    public Pair[][] makePairwiseCostArray() {
+    public Pair[][] makePairwiseCostArray(double remainingCaptureAmount) {
         Pair[][] pairCosts = new Pair[sources.length][sinks.length];
         for (int srcNum = 0; srcNum < sources.length; srcNum++) {
             for (int snkNum = 0; snkNum < sinks.length; snkNum++) {
                 Source src = sources[srcNum];
                 Sink snk = sinks[snkNum];
 
-                double transferAmount = Math.min(src.getRemainingCapacity(), snk.getRemainingCapacity());
+                double transferAmount = Math.min(Math.min(src.getRemainingCapacity(), snk.getRemainingCapacity()), remainingCaptureAmount);
                 double cost = Double.MAX_VALUE;
                 HashSet<HeuristicEdge> path = null;
 
@@ -212,7 +213,7 @@ public class Heuristic {
                         edgeCost += frontEdge.buildCost[newSize] - frontEdge.buildCost[frontEdge.currentSize];
                         edgeCost += frontEdge.transportCost[newSize] * (transferAmount + frontEdge.currentHostingAmount) - frontEdge.transportCost[frontEdge.currentSize] * (frontEdge.currentHostingAmount);
                     }
-                    frontEdge.cost = edgeCost;
+                    frontEdge.cost = Math.max(edgeCost, 0); //NEED TO THINK ABOUT THIS!
                 }
             }
         }
@@ -221,7 +222,7 @@ public class Heuristic {
     public int getNewPipelineSize(HeuristicEdge edge, double volume) {
         double[] capacities = edge.capacities;
         int size = 0;
-        while (volume < capacities[size]) {
+        while (volume > capacities[size]) {
             size++;
         }
         return size;
@@ -262,7 +263,6 @@ public class Heuristic {
                     }
                 }
             }
-
         }
 
         HashSet<HeuristicEdge> path = new HashSet<>();
