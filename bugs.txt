@@ -1,3 +1,5 @@
 Costs look off between OPT and Heuristic
 
 What about if sources/sinks co-located? What about multiple sources at same location?
+
+Need to figure out negative cost edges
