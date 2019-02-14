@@ -264,12 +264,17 @@ public class ControlActions {
     }
 
     // Heuristic
-    public void runHeuristic() {
+    public void runHeuristic(String crf, String numYears, String capacityTarget) {
         DateFormat dateFormat = new SimpleDateFormat("ddMMyyy-HHmmssss");
         Date date = new Date();
         String run = "run" + dateFormat.format(date) + "h";
         File solutionDirectory = new File(basePath + "/" + dataset + "/Scenarios/" + scenario + "/Results/" + run);
         solutionDirectory.mkdir();
+        
+        // Get model data
+        data.setTargetCaptureAmount(Double.parseDouble(capacityTarget));
+        data.setCrf(Double.parseDouble(crf));
+        data.setProjectLength(Integer.parseInt(numYears));
         
         // Run heuristic
         Heuristic heuristic = new Heuristic(data);
@@ -527,6 +532,11 @@ public class ControlActions {
                         if (subFile.getName().endsWith(".sol")) {
                             sol = true;
                         } else if (subFile.getName().endsWith(".mps")) {
+                            mps = true;
+                        }
+                        // Heuristic
+                        if (subFile.getName().endsWith("solution.txt")) {
+                            sol = true;
                             mps = true;
                         }
                     }

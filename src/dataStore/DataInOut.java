@@ -479,7 +479,7 @@ public class DataInOut {
             for (int u = 0; u < graphVertices.length; u++) {
                 for (int v = 0; v < graphVertices.length; v++) {
                     HeuristicEdge edge = adjacencyMatrix[u][v];
-                    if (edge.currentHostingAmount > 0) {
+                    if (edge != null && edge.currentHostingAmount > 0) {
                         double flowAmount = edge.currentHostingAmount;
                         double cost = edge.buildCost[edge.currentSize] + edge.transportCost[edge.currentSize] * flowAmount;
                         bw.write(edge.v1 + "\t" + edge.v2 + "\t" + flowAmount + "\t" + cost + "\n");
@@ -508,36 +508,38 @@ public class DataInOut {
             soln.setProjectLength(Integer.parseInt(line.split("\t")[1]));
 
             line = br.readLine();
+            line = br.readLine();
             while (!line.startsWith("Sink")) {
-                line = br.readLine();
                 String[] sourceComponents = line.split("\t");
+                System.out.println(line);
                 Source source = sources[data.sourceNum(Integer.parseInt(sourceComponents[0]))];
                 double captureAmount = Double.parseDouble(sourceComponents[1]);
                 double cost = Double.parseDouble(sourceComponents[2]);
                 soln.addSourceCaptureAmount(source, captureAmount);
                 soln.addSourceCostComponent(source, cost);
+                line = br.readLine();
             }
 
             line = br.readLine();
             while (!line.startsWith("EdgeSrc")) {
-                line = br.readLine();
                 String[] sinkComponents = line.split("\t");
                 Sink sink = sinks[data.sinkNum(Integer.parseInt(sinkComponents[0]))];
                 double injectAmount = Double.parseDouble(sinkComponents[1]);
                 double cost = Double.parseDouble(sinkComponents[2]);
                 soln.addSinkStorageAmount(sink, injectAmount);
                 soln.addSinkCostComponent(sink, cost);
+                line = br.readLine();
             }
 
             line = br.readLine();
             while (line != null) {
-                line = br.readLine();
                 String[] edgeComponents = line.split("\t");
                 Edge edge = new Edge(Integer.parseInt(edgeComponents[0]), Integer.parseInt(edgeComponents[1]));
                 double flowAmount = Double.parseDouble(edgeComponents[2]);
                 double cost = Double.parseDouble(edgeComponents[3]);
                 soln.addEdgeTransportAmount(edge, flowAmount);
                 soln.addEdgeCostComponent(edge, cost);
+                line = br.readLine();
             }
         } catch (IOException e) {
             System.out.println(e.getMessage());

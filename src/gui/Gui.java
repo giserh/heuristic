@@ -431,7 +431,7 @@ public class Gui extends Application {
         heuristicSolve.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
-                controlActions.runHeuristic();
+                controlActions.runHeuristic(crfValue.getText(), yearValue.getText(), capValue.getText());
             }
         });
         

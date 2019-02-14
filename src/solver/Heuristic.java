@@ -22,6 +22,7 @@ import static utilities.Utilities.convertIntegerArray;
  * @author t92t161
  */
 public class Heuristic {
+
     private DataStorer data;
 
     private Source[] sources;
@@ -38,6 +39,8 @@ public class Heuristic {
         sources = data.getSources();
         sinks = data.getSinks();
         graphVertices = data.getGraphVertices();
+
+        cellNumToVertexNum = new HashMap<>();
     }
 
     public void solve() {
@@ -46,7 +49,7 @@ public class Heuristic {
             src.setRemainingCapacity(src.getProductionRate());
         }
         for (Sink snk : sinks) {
-            snk.setRemainingCapacity(snk.getCapacity());
+            snk.setRemainingCapacity(snk.getCapacity() / data.getProjectLength());
         }
 
         // Make directed edge graph
@@ -95,7 +98,7 @@ public class Heuristic {
         snk.setRemainingCapacity(snk.getRemainingCapacity() - transferAmount);
 
         for (HeuristicEdge frontEdge : path) {
-            HeuristicEdge backEdge = adjacencyMatrix[frontEdge.v2][frontEdge.v1];
+            HeuristicEdge backEdge = adjacencyMatrix[cellNumToVertexNum.get(frontEdge.v2)][cellNumToVertexNum.get(frontEdge.v1)];
 
             // If edge in opposite direction was hosting flow
             if (backEdge.currentHostingAmount > 0) {
@@ -136,33 +139,37 @@ public class Heuristic {
                 Sink snk = sinks[snkNum];
 
                 double transferAmount = Math.min(src.getRemainingCapacity(), snk.getRemainingCapacity());
-                double cost = 0;
+                double cost = Double.MAX_VALUE;
+                HashSet<HeuristicEdge> path = null;
 
-                // Incurr opening cost if source not yet used
-                if (src.getRemainingCapacity() == src.getProductionRate()) {
-                    cost += src.getOpeningCost(data.getCrf());
+                if (transferAmount > 0) {
+                    cost = 0;
+                    // Incurr opening cost if source not yet used
+                    if (src.getRemainingCapacity() == src.getProductionRate()) {
+                        cost += src.getOpeningCost(data.getCrf());
+                    }
+
+                    // Incurr opening cost if sink not yet used
+                    if (snk.getRemainingCapacity() == snk.getCapacity() / data.getProjectLength()) {
+                        cost += snk.getOpeningCost(data.getCrf());
+                    }
+
+                    cost += transferAmount * src.getCaptureCost();
+                    cost += transferAmount * snk.getInjectionCost();
+
+                    // Assign costs to graph
+                    setGraphCosts(src, snk, transferAmount);
+
+                    // Find shortest path between src and snk
+                    Object[] data = dijkstra(src, snk);
+                    path = (HashSet<HeuristicEdge>) data[0];
+                    double pathCost = (double) data[1];
+
+                    cost += pathCost;
+
+                    // Cost per ton of CO2
+                    cost /= transferAmount;
                 }
-
-                // Incurr opening cost if sink not yet used
-                if (snk.getRemainingCapacity() == snk.getCapacity()) {
-                    cost += snk.getOpeningCost(data.getCrf());
-                }
-
-                cost += transferAmount * src.getCaptureCost();
-                cost += transferAmount * snk.getInjectionCost();
-
-                // Assign costs to graph
-                setGraphCosts(src, snk, transferAmount);
-
-                // Find shortest path between src and snk
-                Object[] data = dijkstra(src, snk);
-                HashSet<HeuristicEdge> path = (HashSet<HeuristicEdge>) data[0];
-                double pathCost = (double) data[1];
-
-                cost += pathCost;
-
-                // Cost per ton of CO2
-                cost /= transferAmount;
 
                 pairCosts[srcNum][snkNum] = new Pair(src, snk, path, cost);
             }
@@ -178,33 +185,35 @@ public class Heuristic {
                 HeuristicEdge backEdge = adjacencyMatrix[v][u];
                 double edgeCost = 0;
 
-                // If edge in opposite direction is hosting flow
-                if (backEdge.currentHostingAmount > 0) {
-                    // Remove back edge (because it will need to change)
-                    edgeCost -= backEdge.buildCost[backEdge.currentSize];
-                    edgeCost -= backEdge.currentHostingAmount * backEdge.transportCost[backEdge.currentSize];
+                if (frontEdge != null) {
+                    // If edge in opposite direction is hosting flow
+                    if (backEdge.currentHostingAmount > 0) {
+                        // Remove back edge (because it will need to change)
+                        edgeCost -= backEdge.buildCost[backEdge.currentSize];
+                        edgeCost -= backEdge.currentHostingAmount * backEdge.transportCost[backEdge.currentSize];
 
-                    // If the back edge is still needed
-                    if (transferAmount < backEdge.currentHostingAmount) {
-                        // Calculate the new pipeline size
-                        int newSize = getNewPipelineSize(backEdge, backEdge.currentHostingAmount - transferAmount);
+                        // If the back edge is still needed
+                        if (transferAmount < backEdge.currentHostingAmount) {
+                            // Calculate the new pipeline size
+                            int newSize = getNewPipelineSize(backEdge, backEdge.currentHostingAmount - transferAmount);
 
-                        // Factor in build costs
-                        edgeCost += backEdge.buildCost[newSize];
+                            // Factor in build costs
+                            edgeCost += backEdge.buildCost[newSize];
 
-                        // Factor in utilization costs
-                        edgeCost += backEdge.transportCost[newSize] * (backEdge.currentHostingAmount - transferAmount);
-                    } else if (transferAmount > backEdge.currentHostingAmount) {    //If front edge is now needed
-                        int newSize = getNewPipelineSize(frontEdge, transferAmount - backEdge.currentHostingAmount);
-                        edgeCost += frontEdge.buildCost[newSize];
-                        edgeCost += frontEdge.transportCost[newSize] * (transferAmount - backEdge.currentHostingAmount);
+                            // Factor in utilization costs
+                            edgeCost += backEdge.transportCost[newSize] * (backEdge.currentHostingAmount - transferAmount);
+                        } else if (transferAmount > backEdge.currentHostingAmount) {    //If front edge is now needed
+                            int newSize = getNewPipelineSize(frontEdge, transferAmount - backEdge.currentHostingAmount);
+                            edgeCost += frontEdge.buildCost[newSize];
+                            edgeCost += frontEdge.transportCost[newSize] * (transferAmount - backEdge.currentHostingAmount);
+                        }
+                    } else {
+                        int newSize = getNewPipelineSize(frontEdge, transferAmount + frontEdge.currentHostingAmount);
+                        edgeCost += frontEdge.buildCost[newSize] - frontEdge.buildCost[frontEdge.currentSize];
+                        edgeCost += frontEdge.transportCost[newSize] * (transferAmount + frontEdge.currentHostingAmount) - frontEdge.transportCost[frontEdge.currentSize] * (frontEdge.currentHostingAmount);
                     }
-                } else {
-                    int newSize = getNewPipelineSize(frontEdge, transferAmount + frontEdge.currentHostingAmount);
-                    edgeCost += frontEdge.buildCost[newSize] - frontEdge.buildCost[frontEdge.currentSize];
-                    edgeCost += frontEdge.transportCost[newSize] * (transferAmount + frontEdge.currentHostingAmount) - frontEdge.transportCost[frontEdge.currentSize] * (frontEdge.currentHostingAmount);
+                    frontEdge.cost = edgeCost;
                 }
-                frontEdge.cost = edgeCost;
             }
         }
     }
@@ -242,11 +251,11 @@ public class Heuristic {
         while (!pQueue.isEmpty()) {
             Heuristic.Data u = pQueue.poll();
             for (int neighbor = 0; neighbor < graphVertices.length; neighbor++) {
-                if (adjacencyMatrix[cellNumToVertexNum.get(u.cellNum)][neighbor] != null) {
-                    double altDistance = costs[u.cellNum] + adjacencyMatrix[cellNumToVertexNum.get(u.cellNum)][neighbor].cost;
+                if (adjacencyMatrix[u.vertexNum][neighbor] != null) {
+                    double altDistance = costs[u.vertexNum] + adjacencyMatrix[u.vertexNum][neighbor].cost;
                     if (altDistance < costs[neighbor]) {
                         costs[neighbor] = altDistance;
-                        previous[neighbor] = cellNumToVertexNum.get(u.cellNum);
+                        previous[neighbor] = u.vertexNum;
 
                         map[neighbor].distance = altDistance;
                         pQueue.add(map[neighbor]);
@@ -263,15 +272,14 @@ public class Heuristic {
             path.add(adjacencyMatrix[previousNode][node]);
             node = previousNode;
         }
-        path.add(adjacencyMatrix[srcVertexNum][node]);
 
         return new Object[]{path, costs[snkVertexNum]};
     }
-    
+
     public Source[] getSources() {
         return sources;
     }
-    
+
     public Sink[] getSinks() {
         return sinks;
     }
@@ -279,22 +287,22 @@ public class Heuristic {
     public int[] getGraphVertices() {
         return graphVertices;
     }
-    
+
     public HeuristicEdge[][] getAdjacencyMatrix() {
         return adjacencyMatrix;
     }
-    
+
     public HashMap<Integer, Integer> getCellVertexMap() {
         return cellNumToVertexNum;
     }
 
     private class Data implements Comparable<Data> {
 
-        public int cellNum;
+        public int vertexNum;
         public double distance;
 
         public Data(int cellNum, double distance) {
-            this.cellNum = cellNum;
+            this.vertexNum = cellNum;
             this.distance = distance;
         }
 
@@ -305,7 +313,7 @@ public class Heuristic {
 
         @Override
         public int hashCode() {
-            return cellNum;
+            return vertexNum;
         }
 
         public boolean equals(Data other) {
