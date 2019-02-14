@@ -212,6 +212,7 @@ public class Heuristic {
                         edgeCost += frontEdge.buildCost[newSize] - frontEdge.buildCost[frontEdge.currentSize];
                         edgeCost += frontEdge.transportCost[newSize] * (transferAmount + frontEdge.currentHostingAmount) - frontEdge.transportCost[frontEdge.currentSize] * (frontEdge.currentHostingAmount);
                     }
+                    //frontEdge.cost = edgeCost;
                     frontEdge.cost = Math.max(edgeCost, 0); //NEED TO THINK ABOUT THIS!
                 }
             }
