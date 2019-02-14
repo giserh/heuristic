@@ -441,7 +441,7 @@ public class DataInOut {
             System.out.println(e.getMessage());
         }
     }
-    
+
     // Heuristic
     public static void saveHeuristicSolution(File solutionDirectory, Heuristic heuristic) {
         // Collect data.
@@ -451,12 +451,12 @@ public class DataInOut {
         HeuristicEdge[][] adjacencyMatrix = heuristic.getAdjacencyMatrix();
         HashMap<Integer, Integer> cellNumToVertexNum = heuristic.getCellVertexMap();
         double crf = data.getCrf();
-        
+
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(solutionDirectory.toString() + "/solution.txt"))) {
             bw.write("crf:\t" + crf + "\n");
             bw.write("captureTarget:\t" + data.getTargetCaptureAmount() + "\n");
             bw.write("projectLength:\t" + data.getProjectLength() + "\n");
-            
+
             bw.write("Source\tCaptureAmount\tCost\n");
             for (Source src : sources) {
                 if (src.getRemainingCapacity() < src.getProductionRate()) {
@@ -465,7 +465,7 @@ public class DataInOut {
                     bw.write(src.getCellNum() + "\t" + captureAmount + "\t" + cost + "\n");
                 }
             }
-            
+
             bw.write("Sink\tInjectAmount\tCost\n");
             for (Sink snk : sinks) {
                 if (snk.getRemainingCapacity() < snk.getCapacity()) {
@@ -474,32 +474,75 @@ public class DataInOut {
                     bw.write(snk.getCellNum() + "\t" + injectAmount + "\t" + cost + "\n");
                 }
             }
-            
+
             bw.write("EdgeSrc\tEdgeSnk\tFlowAmount\tCost\n");
             for (int u = 0; u < graphVertices.length; u++) {
                 for (int v = 0; v < graphVertices.length; v++) {
                     HeuristicEdge edge = adjacencyMatrix[u][v];
-                    double flowAmount = edge.currentHostingAmount;
-                    double cost = edge.buildCost[edge.currentSize] + edge.transportCost[edge.currentSize] * flowAmount;
-                    bw.write(edge.v1 + "\t" + edge.v2 + "\t" + flowAmount + "\t" + cost + "\n");
+                    if (edge.currentHostingAmount > 0) {
+                        double flowAmount = edge.currentHostingAmount;
+                        double cost = edge.buildCost[edge.currentSize] + edge.transportCost[edge.currentSize] * flowAmount;
+                        bw.write(edge.v1 + "\t" + edge.v2 + "\t" + flowAmount + "\t" + cost + "\n");
+                    }
                 }
             }
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
     }
-    
+
     // Heuristic
     public static Solution loadHeuristicSolution(String solutionPath) {
         Solution soln = new Solution();
-        
+        Source[] sources = data.getSources();
+        Sink[] sinks = data.getSinks();
+
         try (BufferedReader br = new BufferedReader(new FileReader(solutionPath.toString() + "/solution.txt"))) {
             String line = br.readLine();
-            // TODO
+            soln.setCRF(Double.parseDouble(line.split("\t")[1]));
+
+            line = br.readLine();
+            soln.setTargetCaptureAmountPerYear(Double.parseDouble(line.split("\t")[1]));
+
+            line = br.readLine();
+            soln.setProjectLength(Integer.parseInt(line.split("\t")[1]));
+
+            line = br.readLine();
+            while (!line.startsWith("Sink")) {
+                line = br.readLine();
+                String[] sourceComponents = line.split("\t");
+                Source source = sources[data.sourceNum(Integer.parseInt(sourceComponents[0]))];
+                double captureAmount = Double.parseDouble(sourceComponents[1]);
+                double cost = Double.parseDouble(sourceComponents[2]);
+                soln.addSourceCaptureAmount(source, captureAmount);
+                soln.addSourceCostComponent(source, cost);
+            }
+
+            line = br.readLine();
+            while (!line.startsWith("EdgeSrc")) {
+                line = br.readLine();
+                String[] sinkComponents = line.split("\t");
+                Sink sink = sinks[data.sinkNum(Integer.parseInt(sinkComponents[0]))];
+                double injectAmount = Double.parseDouble(sinkComponents[1]);
+                double cost = Double.parseDouble(sinkComponents[2]);
+                soln.addSinkStorageAmount(sink, injectAmount);
+                soln.addSinkCostComponent(sink, cost);
+            }
+
+            line = br.readLine();
+            while (line != null) {
+                line = br.readLine();
+                String[] edgeComponents = line.split("\t");
+                Edge edge = new Edge(Integer.parseInt(edgeComponents[0]), Integer.parseInt(edgeComponents[1]));
+                double flowAmount = Double.parseDouble(edgeComponents[2]);
+                double cost = Double.parseDouble(edgeComponents[3]);
+                soln.addEdgeTransportAmount(edge, flowAmount);
+                soln.addEdgeCostComponent(edge, cost);
+            }
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-        
+
         return soln;
     }
 
@@ -761,8 +804,8 @@ public class DataInOut {
             writeEdgeShapefiles.export();
         }
     }
-    
-        public static void makeCandidateShapeFiles(String path) {
+
+    public static void makeCandidateShapeFiles(String path) {
         // Make shapefiles if they do not already exist.
         File newDir = new File(path + "/shapeFiles/");
         if (!newDir.exists()) {
@@ -945,15 +988,15 @@ public class DataInOut {
         try {
             URL url = new URL(urlPath);
             connection = (HttpURLConnection) url.openConnection();
-            
+
             DateFormat dateFormat = new SimpleDateFormat("ddMMyyy-HHmmssss");
             Date date = new Date();
             String run = "run" + dateFormat.format(date);
-            
+
             String directoryPath = basePath + "/" + dataset + "/Scenarios/" + scenario + "/Results/" + run;
             File directory = new File(directoryPath);
             directory.mkdir();
-            
+
             // Copy MPS file into results file.
             String mipPath = basePath + "/" + dataset + "/Scenarios/" + scenario + "/MIP/mip.mps";
             Path from = Paths.get(mipPath);

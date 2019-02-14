@@ -258,7 +258,7 @@ public class ControlActions {
             System.out.println("Writing MPS File...");
             data.setTargetCaptureAmount(Double.parseDouble(capacityTarget));    //Heuristic
             data.setCrf(Double.parseDouble(crf));   //Heuristic
-            data.setProjectLength(Double.parseDouble(numYears));    // Heuristic
+            data.setProjectLength(Integer.parseInt(numYears));    // Heuristic
             MPSWriter.writeMPS("mip.mps", data, Double.parseDouble(crf), Double.parseDouble(numYears), Double.parseDouble(capacityTarget), basePath, dataset, scenario);
         }
     }
@@ -502,7 +502,7 @@ public class ControlActions {
             // STDDEV = 1/4 mean
             data.setTargetCaptureAmount(Double.parseDouble(capacityTarget));    //Heuristic
             data.setCrf(Double.parseDouble(crf));   //Heuristic
-            data.setProjectLength(Double.parseDouble(numYears));    // Heuristic
+            data.setProjectLength(Integer.parseInt(numYears));    // Heuristic
             MPSWriter.writeMPS("mip" + i + ".mps", data, Double.parseDouble(crf), Double.parseDouble(numYears), Double.parseDouble(capacityTarget), basePath, dataset, scenario);
         }
         for (int j = 0; j < sinks.length; j++) {
@@ -549,7 +549,13 @@ public class ControlActions {
             if (file.endsWith("Agg")) {
                 aggregateSolutions(file, solutionValues);
             } else {
-                Solution soln = DataInOut.loadSolution(basePath + "/" + dataset + "/Scenarios/" + scenario + "/Results/" + file);
+                // Heuristic
+                Solution soln = null;
+                if (file.endsWith("h")) {
+                    soln = DataInOut.loadHeuristicSolution(basePath + "/" + dataset + "/Scenarios/" + scenario + "/Results/" + file);
+                } else {
+                    soln = DataInOut.loadSolution(basePath + "/" + dataset + "/Scenarios/" + scenario + "/Results/" + file);
+                }
                 HashMap<Edge, int[]> graphEdgeRoutes = data.getGraphEdgeRoutes();
 
                 for (Edge e : soln.getOpenedEdges()) {
