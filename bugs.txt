@@ -1,5 +1,17 @@
-Costs look off between OPT and Heuristic
+Bugs:
+1) ?
 
-What about if sources/sinks co-located? What about multiple sources at same location?
+Things to do:
+1) Feasibility testing. (is it doing what it should be doing?) What about if sources/sinks co-located? What about multiple sources at same location?
 
-Need to figure out negative cost edges
+2) Performance testing. (how does it compare to optimal?)
+
+3) Write paper.
+
+4) Improve algorithm solution performance. Ideas: Different selection criteria beyond just cheapest per ton of CO2. Reconsider negative edge costs. After algorithm is done, use the selected sources and sinks, but recompute pipeline network (Steiner tree / metric closure?).
+
+5) Improve algorithm running time performance.
+
+6) Determine algorithm theoretical performance. Approximation ratio? Comparison to greedy facility location solutions?
+
+7) Name algorithm. Greedy Cheapest Pair (GCP)
