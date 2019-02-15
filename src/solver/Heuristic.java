@@ -96,6 +96,8 @@ public class Heuristic {
 
         src.setRemainingCapacity(src.getRemainingCapacity() - transferAmount);
         snk.setRemainingCapacity(snk.getRemainingCapacity() - transferAmount);
+        
+        snk.setNumWells(getNewNumWells(snk, transferAmount));
 
         for (HeuristicEdge frontEdge : path) {
             HeuristicEdge backEdge = adjacencyMatrix[cellNumToVertexNum.get(frontEdge.v2)][cellNumToVertexNum.get(frontEdge.v1)];
@@ -148,13 +150,15 @@ public class Heuristic {
                     if (src.getRemainingCapacity() == src.getProductionRate()) {
                         cost += src.getOpeningCost(data.getCrf());
                     }
+                    cost += transferAmount * src.getCaptureCost();
 
                     // Incurr opening cost if sink not yet used
                     if (snk.getRemainingCapacity() == snk.getCapacity() / data.getProjectLength()) {
                         cost += snk.getOpeningCost(data.getCrf());
                     }
-
-                    cost += transferAmount * src.getCaptureCost();
+                    // Determine cost of additional wells needed
+                    int numNewWells = getNewNumWells(snk, transferAmount) - snk.getNumWells();
+                    cost += snk.getWellOpeningCost(data.getCrf());
                     cost += transferAmount * snk.getInjectionCost();
 
                     // Assign costs to graph
@@ -226,6 +230,10 @@ public class Heuristic {
             size++;
         }
         return size;
+    }
+    
+    public int getNewNumWells(Sink snk, double volume) {
+        return (int) Math.ceil(volume / snk.getWellCapacity());
     }
 
     // Dijkstra to run on graph edges
