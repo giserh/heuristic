@@ -97,7 +97,8 @@ public class Heuristic {
         src.setRemainingCapacity(src.getRemainingCapacity() - transferAmount);
         snk.setRemainingCapacity(snk.getRemainingCapacity() - transferAmount);
         
-        snk.setNumWells(getNewNumWells(snk, transferAmount));
+        double totalTransferAmount = snk.getCapacity() / data.getProjectLength() - snk.getRemainingCapacity();
+        snk.setNumWells(getNewNumWells(snk, totalTransferAmount));
 
         for (HeuristicEdge frontEdge : path) {
             HeuristicEdge backEdge = adjacencyMatrix[cellNumToVertexNum.get(frontEdge.v2)][cellNumToVertexNum.get(frontEdge.v1)];
@@ -158,7 +159,7 @@ public class Heuristic {
                     }
                     // Determine cost of additional wells needed
                     int numNewWells = getNewNumWells(snk, transferAmount) - snk.getNumWells();
-                    cost += snk.getWellOpeningCost(data.getCrf());
+                    cost += snk.getWellOpeningCost(data.getCrf()) * numNewWells;
                     cost += transferAmount * snk.getInjectionCost();
 
                     // Assign costs to graph
