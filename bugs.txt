@@ -12,6 +12,6 @@ Things to do:
 
 5) Improve algorithm running time performance.
 
-6) Determine algorithm theoretical performance. Approximation ratio? Comparison to greedy facility location solutions?
+6) Determine algorithm theoretical performance. Approximation ratio? Comparison to greedy facility location solutions? Weighted Set-Cover.
 
 7) Name algorithm. Greedy Cheapest Pair (GCP)
