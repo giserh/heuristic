@@ -1,5 +1,6 @@
 Bugs:
-1) ?
+1) Negative Edge Cycles, line ~220 in Heuristic class, not pressing.
+2)
 
 Things to do:
 1) Feasibility testing. (is it doing what it should be doing?) What about if sources/sinks co-located? What about multiple sources at same location?
