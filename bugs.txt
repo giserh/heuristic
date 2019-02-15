@@ -9,7 +9,7 @@ Things to do:
 
 3) Write paper.
 
-4) Improve algorithm solution performance. Ideas: Different selection criteria beyond just cheapest per ton of CO2. Reconsider negative edge costs. After algorithm is done, use the selected sources and sinks, but recompute pipeline network (Steiner tree / metric closure?).
+4) Improve algorithm solution performance. Ideas: Different selection criteria beyond just cheapest per ton of CO2. Reconsider negative edge costs. After algorithm is done, use the selected sources and sinks, but recompute pipeline network (Steiner tree / metric closure?). Possibly update shortest path algorithm.
 
 5) Improve algorithm running time performance.
 
