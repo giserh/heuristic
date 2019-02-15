@@ -470,7 +470,7 @@ public class DataInOut {
             for (Sink snk : sinks) {
                 if (snk.getRemainingCapacity() < (snk.getCapacity() / data.getProjectLength())) {
                     double injectAmount = (snk.getCapacity() / data.getProjectLength()) - snk.getRemainingCapacity();
-                    double cost = snk.getOpeningCost(crf) + snk.getInjectionCost() * injectAmount;
+                    double cost = snk.getOpeningCost(crf) + snk.getInjectionCost() * injectAmount + snk.getNumWells() * snk.getWellOpeningCost(crf);
                     bw.write(snk.getCellNum() + "\t" + injectAmount + "\t" + cost + "\n");
                 }
             }
