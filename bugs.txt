@@ -1,5 +1,5 @@
 Bugs:
-1) ?
+1) If target capture is no feasible, it gets as much as it can and then fails. Maybe it should print an error right off the bat, or do all it can and then print an error.
 2)
 
 Things to do:
