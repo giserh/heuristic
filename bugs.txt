@@ -10,7 +10,10 @@ Things to do:
 3) Write paper.
 
 4) Improve algorithm solution performance. Ideas: Different selection criteria beyond just cheapest per ton of CO2. Reconsider negative edge costs. After algorithm is done, use the selected sources and sinks, but recompute pipeline network (Steiner tree / metric closure?). 
-5) Improve algorithm running time performance.Possibly update shortest path algorithm.
+
+5) Improve algorithm running time performance.Possibly update shortest path algorithm. Other ideas:
+	- Once a source/sink is maxed out, remove it from the least cost array.
+	- Only calculate the shortest paths once? This will impact the quality of solution, but may still be reasonable.
 
 
 6) Determine algorithm theoretical performance. Approximation ratio? Comparison to greedy facility location solutions? Weighted Set-Cover.
