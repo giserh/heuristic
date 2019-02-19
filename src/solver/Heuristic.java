@@ -89,6 +89,7 @@ public class Heuristic {
             double transferAmount = Math.min(Math.min(cheapest.src.getRemainingCapacity(), cheapest.snk.getRemainingCapacity()), data.getTargetCaptureAmount() - amountCaptured);
             amountCaptured += transferAmount;
             schedulePair(cheapest.src, cheapest.snk, cheapest.path, transferAmount);
+            System.out.println("Captured " + amountCaptured + " of " + data.getTargetCaptureAmount());
         }
     }
 
