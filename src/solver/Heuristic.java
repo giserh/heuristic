@@ -44,6 +44,7 @@ public class Heuristic {
     }
 
     public void solve() {
+        long startTime = System.nanoTime();
         // Initialize sources and sinks
         for (Source src : sources) {
             src.setRemainingCapacity(src.getProductionRate());
@@ -91,6 +92,7 @@ public class Heuristic {
             schedulePair(cheapest.src, cheapest.snk, cheapest.path, transferAmount);
             System.out.println("Captured " + amountCaptured + " of " + data.getTargetCaptureAmount());
         }
+        System.out.println("Execution Time: " + (System.nanoTime() - startTime) / 1000000000 + " seconds");
     }
 
     public void schedulePair(Source src, Sink snk, HashSet<HeuristicEdge> path, double transferAmount) {
