@@ -14,6 +14,8 @@ Things to do:
 5) Improve algorithm running time performance.Possibly update shortest path algorithm. Other ideas:
 	- Once a source/sink is maxed out, remove it from the least cost array.
 	- Only calculate the shortest paths once? This will impact the quality of solution, but may still be reasonable.
+	- Make shortest path operate on double array instead of object array.
+	- Predetermine neighbors instead of searching each run of shortest path.
 
 
 6) Determine algorithm theoretical performance. Approximation ratio? Comparison to greedy facility location solutions? Weighted Set-Cover.
