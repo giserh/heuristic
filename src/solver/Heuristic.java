@@ -31,7 +31,9 @@ public class Heuristic {
     // Graph
     private int[] graphVertices;
     private HeuristicEdge[][] adjacencyMatrix;
+    private double[][] adjacencyCosts;
     private HashMap<Integer, Integer> cellNumToVertexNum;
+    private HashMap<Integer, HashSet<Integer>> neighbors;
 
     public Heuristic(DataStorer data) {
         this.data = data;
@@ -41,6 +43,7 @@ public class Heuristic {
         graphVertices = data.getGraphVertices();
 
         cellNumToVertexNum = new HashMap<>();
+        neighbors = new HashMap<>();
     }
 
     public void solve() {
@@ -56,11 +59,17 @@ public class Heuristic {
         // Make directed edge graph
         Set<Edge> originalEdges = data.getGraphEdgeCosts().keySet();
         adjacencyMatrix = new HeuristicEdge[graphVertices.length][graphVertices.length];
+        adjacencyCosts = new double[graphVertices.length][graphVertices.length];
 
         for (int u = 0; u < graphVertices.length; u++) {
             cellNumToVertexNum.put(graphVertices[u], u);
             for (int v = 0; v < graphVertices.length; v++) {
+                adjacencyCosts[u][v] = Double.MAX_VALUE;
                 if (originalEdges.contains(new Edge(graphVertices[u], graphVertices[v]))) {
+                    if (neighbors.get(u) == null) {
+                        neighbors.put(u, new HashSet<>());
+                    }
+                    neighbors.get(u).add(v);
                     adjacencyMatrix[u][v] = new HeuristicEdge(graphVertices[u], graphVertices[v], data);
                     adjacencyMatrix[u][v].currentHostingAmount = 0;
                     adjacencyMatrix[u][v].currentSize = 0;
@@ -222,6 +231,7 @@ public class Heuristic {
                     }
                     //frontEdge.cost = edgeCost;
                     frontEdge.cost = Math.max(edgeCost, 0); //NEED TO THINK ABOUT THIS!
+                    adjacencyCosts[u][v] = Math.max(edgeCost, 0);
                 }
             }
         }
@@ -263,9 +273,10 @@ public class Heuristic {
 
         while (!pQueue.isEmpty()) {
             Heuristic.Data u = pQueue.poll();
-            for (int neighbor = 0; neighbor < graphVertices.length; neighbor++) {
+            for (int neighbor : neighbors.get(u.vertexNum)) {
                 if (adjacencyMatrix[u.vertexNum][neighbor] != null) {
-                    double altDistance = costs[u.vertexNum] + adjacencyMatrix[u.vertexNum][neighbor].cost;
+                    //double altDistance = costs[u.vertexNum] + adjacencyMatrix[u.vertexNum][neighbor].cost;
+                    double altDistance = costs[u.vertexNum] + adjacencyCosts[u.vertexNum][neighbor];
                     if (altDistance < costs[neighbor]) {
                         costs[neighbor] = altDistance;
                         previous[neighbor] = u.vertexNum;
