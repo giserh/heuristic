@@ -11,6 +11,8 @@ import dataStore.HeuristicEdge;
 import dataStore.Sink;
 import dataStore.Source;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.PriorityQueue;
@@ -46,7 +48,14 @@ public class Heuristic {
         neighbors = new HashMap<>();
     }
 
-    public void solve() {
+    // Every iteration, the algorithm will choose numPairs pairs with the lowest cost to add to the network.
+    // Should be between 1 and the number of pairs (#srcs*#snks).
+    public void solve(int numPairs) {
+    	
+    	//Set number of pairs to srcs.length*snks.length if it is larger.
+    	numPairs = Math.min(numPairs, sources.length*sinks.length);
+    	
+    	
         long startTime = System.nanoTime();
         // Initialize sources and sinks
         for (Source src : sources) {
@@ -84,21 +93,34 @@ public class Heuristic {
         double amountCaptured = 0;  // Amount of CO2 currently captured/injected by algorithm
 
         while (amountCaptured < data.getTargetCaptureAmount()) {
+        	
             // Make cost array
             Pair[][] pairCosts = makePairwiseCostArray(data.getTargetCaptureAmount() - amountCaptured);
 
-            // Schedule cheapest
-            Pair cheapest = new Pair(null, null, null, Double.MAX_VALUE);
+            // TODO: Look at making this more efficient.Probably return pairCosts initially.
+            ArrayList<Pair> pairCostsList = new ArrayList<Pair>();
             for (int srcNum = 0; srcNum < sources.length; srcNum++) {
                 for (int snkNum = 0; snkNum < sinks.length; snkNum++) {
-                    if (pairCosts[srcNum][snkNum].cost < cheapest.cost) {
-                        cheapest = pairCosts[srcNum][snkNum];
-                    }
+                       pairCostsList.add(pairCosts[srcNum][snkNum]);
+                    
                 }
             }
-            double transferAmount = Math.min(Math.min(cheapest.src.getRemainingCapacity(), cheapest.snk.getRemainingCapacity()), data.getTargetCaptureAmount() - amountCaptured);
-            amountCaptured += transferAmount;
-            schedulePair(cheapest.src, cheapest.snk, cheapest.path, transferAmount);
+            
+            pairCostsList.sort(new PairComparator());
+            
+            Pair cheapest[] = new Pair[numPairs];
+            cheapest = pairCostsList.subList(0, numPairs).toArray(cheapest);
+            
+            double transferAmount =0;
+            for(int i=0;i<cheapest.length;i++) {
+	            transferAmount = Math.min(Math.min(cheapest[i].src.getRemainingCapacity(), cheapest[i].snk.getRemainingCapacity()), data.getTargetCaptureAmount() - amountCaptured);
+	            amountCaptured += transferAmount;
+	            schedulePair(cheapest[i].src, cheapest[i].snk, cheapest[i].path, transferAmount);
+	            
+	            if(amountCaptured >= data.getTargetCaptureAmount()) {
+	            	break;
+	            }
+            }
             System.out.println("Captured " + amountCaptured + " of " + data.getTargetCaptureAmount());
         }
         System.out.println("Execution Time: " + (System.nanoTime() - startTime) / 1000000000 + " seconds");
@@ -343,6 +365,16 @@ public class Heuristic {
             return distance == other.distance;
         }
     }
+    
+    private class PairComparator implements Comparator<Pair> {
+
+		@Override
+		public int compare(Pair arg0, Pair arg1) {
+			
+			return Double.compare(arg0.cost, arg1.cost);
+		}
+    	
+    }
 
     private class Pair {
 
@@ -357,5 +389,8 @@ public class Heuristic {
             this.path = path;
             this.cost = cost;
         }
+
+
+
     }
 }

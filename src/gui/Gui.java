@@ -398,10 +398,21 @@ public class Gui extends Application {
         capValue.setLayoutX(143);
         capValue.setLayoutY(64);
         formulationPane.getChildren().add(capValue);
+        
+        Label numPairsLabel = new Label("Number of Pairs \n(Heuristic)");
+        numPairsLabel.setLayoutX(4);
+        numPairsLabel.setLayoutY(94);
+        formulationPane.getChildren().add(numPairsLabel);
+        TextField numPairsValue = new TextField("1");
+        numPairsValue.setEditable(true);
+        numPairsValue.setPrefColumnCount(2);
+        numPairsValue.setLayoutX(143);
+        numPairsValue.setLayoutY(94);
+        formulationPane.getChildren().add(numPairsValue);
 
         Button generateSolutionFile = new Button("Generate MPS File");
         generateSolutionFile.setLayoutX(25);
-        generateSolutionFile.setLayoutY(94);
+        generateSolutionFile.setLayoutY(124);
         formulationPane.getChildren().add(generateSolutionFile);
         generateSolutionFile.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -413,7 +424,7 @@ public class Gui extends Application {
         // Populate model pane.
         TitledPane modelContainer = new TitledPane("Problem Parameters", formulationPane);  //Heuristic
         modelContainer.setCollapsible(false);
-        modelContainer.setPrefSize(192, 152);
+        modelContainer.setPrefSize(192, 182);
         modelContainer.setLayoutX(14);
         modelContainer.setLayoutY(5);
         modelPane.getChildren().add(modelContainer);
@@ -431,13 +442,14 @@ public class Gui extends Application {
         heuristicSolve.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
-                controlActions.runHeuristic(crfValue.getText(), yearValue.getText(), capValue.getText());
+                controlActions.runHeuristic(crfValue.getText(), yearValue.getText(), capValue.getText(),numPairsValue.getText());
             }
         });
         
+        
         Button cplexSolve = new Button("Solve With CPLEX");
-        cplexSolve.setLayoutX(28);
-        cplexSolve.setLayoutY(37);  // Heuristic
+        cplexSolve.setLayoutX(23);
+        cplexSolve.setLayoutY(39);  // Heuristic
         solutionPane.getChildren().add(cplexSolve);
         cplexSolve.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -448,7 +460,7 @@ public class Gui extends Application {
         
         Button gatewaySolve = new Button("Solve With Gateway");
         gatewaySolve.setLayoutX(23);
-        gatewaySolve.setLayoutY(69);    // Heuristic
+        gatewaySolve.setLayoutY(70);    // Heuristic
         solutionPane.getChildren().add(gatewaySolve);
         gatewaySolve.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -462,7 +474,7 @@ public class Gui extends Application {
         solutionContainer.setCollapsible(false);
         solutionContainer.setPrefSize(192, 125);    // Heuristic
         solutionContainer.setLayoutX(14);
-        solutionContainer.setLayoutY(162);
+        solutionContainer.setLayoutY(192);
         modelPane.getChildren().add(solutionContainer);
 
         // Populate results pane.
