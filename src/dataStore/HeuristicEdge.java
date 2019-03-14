@@ -46,7 +46,7 @@ public class HeuristicEdge {
 
         //Construction and right-of-way costs
         HashMap<Edge, Double> edgeConstructionCosts = data.getGraphEdgeConstructionCosts();
-        HashMap<Edge, Double> edgeRightOfWayCosts = data.getGraphEdgeRightOfWawCosts();
+        HashMap<Edge, Double> edgeRightOfWayCosts = data.getGraphEdgeRightOfWayCosts();
         
         // Populate buildCost
         buildCost = new double[numPossibleSizes + 1];
