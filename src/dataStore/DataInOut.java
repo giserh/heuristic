@@ -286,17 +286,23 @@ public class DataInOut {
             try (BufferedReader br = new BufferedReader(new FileReader(candidateGraphPath))) {
                 String line = br.readLine();
                 // Determine data version
-                int routeStarting = 3;
+                int routeStarting = 5;
                 if (!line.startsWith("Vertex1")) {
                     routeStarting = 4;
                     br.readLine();
                     br.readLine();
                     br.readLine();
                 }
+                if (!line.contains("ConCost")) {
+                    routeStarting = 3;
+                }
                 line = br.readLine();
 
                 HashSet<Integer> graphVertices = new HashSet<>();
                 HashMap<Edge, Double> graphEdgeCosts = new HashMap<>();
+                HashMap<Edge, Double> graphEdgeConstructionCosts = new HashMap<>();
+                HashMap<Edge, Double> graphEdgeRightOfWayCosts = new HashMap<>();
+
                 HashMap<Edge, int[]> graphEdgeRoutes = new HashMap<>();
                 while (line != null) {
                     String[] elements = line.split("\\s+");
@@ -307,6 +313,13 @@ public class DataInOut {
                     graphVertices.add(v2);
                     double cost = Double.parseDouble(elements[2]);
 
+                    double conCost = 0;
+                    double rowCost = 0;
+                    if (routeStarting == 5) {
+                        conCost = Double.parseDouble(elements[3]);
+                        rowCost = Double.parseDouble(elements[4]);
+                    }
+
                     ArrayList<Integer> route = new ArrayList<>();
                     for (int i = routeStarting; i < elements.length; i++) {
                         route.add(Integer.parseInt(elements[i]));
@@ -314,6 +327,11 @@ public class DataInOut {
 
                     graphEdgeCosts.put(edge, cost);
                     graphEdgeRoutes.put(edge, convertIntegerArray(route.toArray(new Integer[0])));
+
+                    if (routeStarting == 5) {
+                        graphEdgeConstructionCosts.put(edge, conCost);
+                        graphEdgeRightOfWayCosts.put(edge, rowCost);
+                    }
 
                     // Prepare for next entry
                     line = br.readLine();
@@ -329,6 +347,12 @@ public class DataInOut {
                 data.setGraphVertices(vertices);
                 data.setGraphEdgeCosts(graphEdgeCosts);
                 data.setGraphEdgeRoutes(graphEdgeRoutes);
+
+                if (routeStarting == 5) {
+                    data.setGraphEdgeConstructionCosts(graphEdgeConstructionCosts);
+                    data.setGraphEdgeRightOfWayCosts(graphEdgeRightOfWayCosts);
+                }
+                
                 System.out.println();
             } catch (IOException e) {
                 System.out.println(e.getMessage());
@@ -423,14 +447,16 @@ public class DataInOut {
     public static void saveCandidateGraph() {
         HashMap<Edge, Double> graphEdgeCosts = data.getGraphEdgeCosts();
         HashMap<Edge, int[]> graphEdgeRoutes = data.getGraphEdgeRoutes();
+        HashMap<Edge, Double> graphEdgeConstructionCosts = data.getGraphEdgeConstructionCosts();
+        HashMap<Edge, Double> graphEdgeRightOfWayCosts = data.getGraphEdgeRightOfWayCosts();
 
         String rawPathsPath = basePath + "/" + dataset + "/Scenarios/" + scenario + "/Network/CandidateNetwork/CandidateNetwork.txt";
 
         // Save to file.
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(rawPathsPath))) {
-            bw.write("Vertex1\tVertex2\tCost\tCellRoute\n");
+            bw.write("Vertex1\tVertex2\tCost\tConCost\tROWCost\tCellRoute\n");
             for (Edge e : graphEdgeRoutes.keySet()) {
-                bw.write(e.v1 + "\t" + e.v2 + "\t" + graphEdgeCosts.get(e));
+                bw.write(e.v1 + "\t" + e.v2 + "\t" + graphEdgeCosts.get(e) + "\t" + graphEdgeConstructionCosts.get(e) + "\t" + graphEdgeRightOfWayCosts.get(e));
                 int[] route = graphEdgeRoutes.get(e);
                 for (int vertex : route) {
                     bw.write("\t" + vertex);
