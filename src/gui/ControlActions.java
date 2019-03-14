@@ -45,6 +45,8 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeLineCap;
 import solver.MPSWriter;
 import solver.Solver;
+import solver.StupidHeuristic;
+
 import static utilities.Utilities.*;
 
 import javafx.beans.value.ChangeListener;
@@ -264,7 +266,7 @@ public class ControlActions {
     }
 
     // Heuristic
-    public void runHeuristic(String crf, String numYears, String capacityTarget) {
+    public void runHeuristic(String crf, String numYears, String capacityTarget,String numPairs) {
         DateFormat dateFormat = new SimpleDateFormat("ddMMyyy-HHmmssss");
         Date date = new Date();
         String run = "run" + dateFormat.format(date) + "h";
@@ -278,11 +280,12 @@ public class ControlActions {
         
         // Run heuristic
         Heuristic heuristic = new Heuristic(data);
-        heuristic.solve();
+        heuristic.solve(Integer.parseInt(numPairs));
         
         // Save solution
         DataInOut.saveHeuristicSolution(solutionDirectory, heuristic);
     }
+    
 
     public void runCPLEX() {
         // Check if CPLEX exists.
