@@ -45,7 +45,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeLineCap;
 import solver.MPSWriter;
 import solver.Solver;
-import solver.StupidHeuristic;
 
 import static utilities.Utilities.*;
 
