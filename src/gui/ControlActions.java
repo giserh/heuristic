@@ -265,7 +265,7 @@ public class ControlActions {
     }
 
     // Heuristic
-    public void runHeuristic(String crf, String numYears, String capacityTarget,String numPairs) {
+    public void runHeuristic(String crf, String numYears, String capacityTarget, String numPairs, int modelVersion) {
         DateFormat dateFormat = new SimpleDateFormat("ddMMyyy-HHmmssss");
         Date date = new Date();
         String run = "run" + dateFormat.format(date) + "h";

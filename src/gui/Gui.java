@@ -509,7 +509,13 @@ public class Gui extends Application {
         heuristicSolve.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
-                controlActions.runHeuristic(crfValue.getText(), yearValue.getText(), capValue.getText(),numPairsValue.getText());
+                int modelVersion = 0;
+                if (capVersion.isSelected()) {
+                    modelVersion = 1;
+                } else if (priceVersion.isSelected()) {
+                    modelVersion = 2;
+                }
+                controlActions.runHeuristic(crfValue.getText(), yearValue.getText(), capValue.getText(),numPairsValue.getText(), modelVersion);
             }
         });
         
