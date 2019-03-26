@@ -156,8 +156,12 @@ public class Solution {
         return sinkStorageAmounts.keySet().size();
     }
     
-    public double getTargetCaptureAmount() {
-        return targetCaptureAmountPerYear * projectLength;
+    public double getCaptureAmount() {
+        double amountCaptured = 0;
+        for (Source src : sourceCaptureAmounts.keySet()) {
+            amountCaptured += sourceCaptureAmounts.get(src);
+        }
+        return amountCaptured * projectLength;
     }
     
     public int getNumEdgesOpened() {
