@@ -279,7 +279,7 @@ public class ControlActions {
         
         // Run heuristic
         Heuristic heuristic = new Heuristic(data);
-        heuristic.solve(Integer.parseInt(numPairs));
+        heuristic.solve(Integer.parseInt(numPairs), modelVersion);
         
         // Save solution
         DataInOut.saveHeuristicSolution(solutionDirectory, heuristic);
