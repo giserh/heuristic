@@ -33,7 +33,7 @@ public class HeuristicEdge {
         capacities = new double[numPossibleSizes + 1];   //Need 0 to represent no pipeline
         // Get max pipeline capacity.
         for (int c = 0; c < linearComponents.length; c++) {
-            double maxCap = dataStorer.getTargetCaptureAmount();
+            double maxCap = Double.MAX_VALUE;
             if (c < linearComponents.length - 1) {
                 double alpha1 = linearComponents[c].getConAlpha() + linearComponents[c].getRowAlpha();
                 double beta1 = linearComponents[c].getConBeta() + linearComponents[c].getRowBeta();
