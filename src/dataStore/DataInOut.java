@@ -484,21 +484,21 @@ public class DataInOut {
             bw.write("captureTarget:\t" + data.getTargetCaptureAmount() + "\n");
             bw.write("projectLength:\t" + data.getProjectLength() + "\n");
 
-            bw.write("Source\tCaptureAmount\tCost\n");
+            bw.write("SourceCell\tSourceLabel\tCaptureAmount\tCost\n");
             for (Source src : sources) {
                 if (src.getRemainingCapacity() < src.getProductionRate()) {
                     double captureAmount = src.getProductionRate() - src.getRemainingCapacity();
                     double cost = src.getOpeningCost(crf) + src.getCaptureCost() * captureAmount;
-                    bw.write(src.getCellNum() + "\t" + captureAmount + "\t" + cost + "\n");
+                    bw.write(src.getCellNum() + "\t" + src.getLabel() + "\t" + captureAmount + "\t" + cost + "\n");
                 }
             }
 
-            bw.write("Sink\tInjectAmount\tCost\n");
+            bw.write("Sink\tSinkLabel\tInjectAmount\tCost\n");
             for (Sink snk : sinks) {
                 if (snk.getRemainingCapacity() < (snk.getCapacity() / data.getProjectLength())) {
                     double injectAmount = (snk.getCapacity() / data.getProjectLength()) - snk.getRemainingCapacity();
                     double cost = snk.getOpeningCost(crf) + snk.getInjectionCost() * injectAmount + snk.getNumWells() * snk.getWellOpeningCost(crf);
-                    bw.write(snk.getCellNum() + "\t" + injectAmount + "\t" + cost + "\n");
+                    bw.write(snk.getCellNum() + "\t" + snk.getLabel() + "\t" + injectAmount + "\t" + cost + "\n");
                 }
             }
 
@@ -539,8 +539,8 @@ public class DataInOut {
             while (!line.startsWith("Sink")) {
                 String[] sourceComponents = line.split("\t");
                 Source source = sources[data.sourceNum(Integer.parseInt(sourceComponents[0]))];
-                double captureAmount = Double.parseDouble(sourceComponents[1]);
-                double cost = Double.parseDouble(sourceComponents[2]);
+                double captureAmount = Double.parseDouble(sourceComponents[2]);
+                double cost = Double.parseDouble(sourceComponents[3]);
                 soln.addSourceCaptureAmount(source, captureAmount);
                 soln.addSourceCostComponent(source, cost);
                 line = br.readLine();
@@ -550,8 +550,8 @@ public class DataInOut {
             while (!line.startsWith("EdgeSrc")) {
                 String[] sinkComponents = line.split("\t");
                 Sink sink = sinks[data.sinkNum(Integer.parseInt(sinkComponents[0]))];
-                double injectAmount = Double.parseDouble(sinkComponents[1]);
-                double cost = Double.parseDouble(sinkComponents[2]);
+                double injectAmount = Double.parseDouble(sinkComponents[2]);
+                double cost = Double.parseDouble(sinkComponents[3]);
                 soln.addSinkStorageAmount(sink, injectAmount);
                 soln.addSinkCostComponent(sink, cost);
                 line = br.readLine();
