@@ -399,58 +399,66 @@ public class Gui extends Application {
         capValue.setLayoutY(64);
         formulationPane.getChildren().add(capValue);
         
-        Label numPairsLabel = new Label("Number of Pairs \n(Heuristic)");
-        numPairsLabel.setLayoutX(4);
-        numPairsLabel.setLayoutY(94);
-        formulationPane.getChildren().add(numPairsLabel);
-        TextField numPairsValue = new TextField("1");
-        numPairsValue.setEditable(true);
-        numPairsValue.setPrefColumnCount(2);
-        numPairsValue.setLayoutX(143);
-        numPairsValue.setLayoutY(94);
-        formulationPane.getChildren().add(numPairsValue);
+        RadioButton capVersion = new RadioButton("Cap");
+        RadioButton priceVersion = new RadioButton("Price");
+        capVersion.setLayoutX(35);
+        capVersion.setLayoutY(100);
+        formulationPane.getChildren().add(capVersion);
+        capVersion.setSelected(true);
+        capVersion.selectedProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> selected, Boolean oldVal, Boolean show) {
+                if (!oldVal) {
+                    priceVersion.setSelected(false);
+                }
+            }
+        });
+        
+        priceVersion.setLayoutX(115);
+        priceVersion.setLayoutY(100);
+        formulationPane.getChildren().add(priceVersion);
+        priceVersion.selectedProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> selected, Boolean oldVal, Boolean show) {
+                if (!oldVal) {
+                    capVersion.setSelected(false);
+                }
+            }
+        });
 
+        // Populate model pane.
+        TitledPane modelContainer = new TitledPane("Problem Formulation", formulationPane);  //Heuristic
+        modelContainer.setCollapsible(false);
+        modelContainer.setPrefSize(192, 147);
+        modelContainer.setLayoutX(14);
+        modelContainer.setLayoutY(5);
+        modelPane.getChildren().add(modelContainer);
+        
+        // Solution pane.
+        AnchorPane mipSolutionPane = new AnchorPane();
+        mipSolutionPane.setPrefSize(192, 100);
+        mipSolutionPane.setMinSize(0, 0);
+        
         Button generateSolutionFile = new Button("Generate MPS File");
-        generateSolutionFile.setLayoutX(25);
-        generateSolutionFile.setLayoutY(124);
-        formulationPane.getChildren().add(generateSolutionFile);
+        generateSolutionFile.setLayoutX(35);
+        generateSolutionFile.setLayoutY(5);
+        mipSolutionPane.getChildren().add(generateSolutionFile);
         generateSolutionFile.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
                 controlActions.generateMPSFile(crfValue.getText(), yearValue.getText(), capValue.getText());
             }
         });
-
-        // Populate model pane.
-        TitledPane modelContainer = new TitledPane("Problem Parameters", formulationPane);  //Heuristic
-        modelContainer.setCollapsible(false);
-        modelContainer.setPrefSize(192, 182);
-        modelContainer.setLayoutX(14);
-        modelContainer.setLayoutY(5);
-        modelPane.getChildren().add(modelContainer);
         
-        // Solution pane.
-        AnchorPane solutionPane = new AnchorPane();
-        solutionPane.setPrefSize(192, 100);
-        solutionPane.setMinSize(0, 0);
+        Label solverLabel = new Label("Solver:");
+        solverLabel.setLayoutX(4);
+        solverLabel.setLayoutY(41);
+        mipSolutionPane.getChildren().add(solverLabel);
         
-        // Heuristic
-        Button heuristicSolve = new Button("Solve With Heuristic");
-        heuristicSolve.setLayoutX(22);
-        heuristicSolve.setLayoutY(5);
-        solutionPane.getChildren().add(heuristicSolve);
-        heuristicSolve.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                controlActions.runHeuristic(crfValue.getText(), yearValue.getText(), capValue.getText(),numPairsValue.getText());
-            }
-        });
-        
-        
-        Button cplexSolve = new Button("Solve With CPLEX");
-        cplexSolve.setLayoutX(23);
-        cplexSolve.setLayoutY(39);  // Heuristic
-        solutionPane.getChildren().add(cplexSolve);
+        Button cplexSolve = new Button("CPLEX");
+        cplexSolve.setLayoutX(51);
+        cplexSolve.setLayoutY(38);  // Heuristic
+        mipSolutionPane.getChildren().add(cplexSolve);
         cplexSolve.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
@@ -458,10 +466,10 @@ public class Gui extends Application {
             }
         });
         
-        Button gatewaySolve = new Button("Solve With Gateway");
-        gatewaySolve.setLayoutX(23);
-        gatewaySolve.setLayoutY(70);    // Heuristic
-        solutionPane.getChildren().add(gatewaySolve);
+        Button gatewaySolve = new Button("Gateway");
+        gatewaySolve.setLayoutX(115);
+        gatewaySolve.setLayoutY(38);    // Heuristic
+        mipSolutionPane.getChildren().add(gatewaySolve);
         gatewaySolve.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
@@ -469,13 +477,49 @@ public class Gui extends Application {
             }
         });
 
-        // Populate solution method pane.
-        TitledPane solutionContainer = new TitledPane("Solve Problem", solutionPane);
-        solutionContainer.setCollapsible(false);
-        solutionContainer.setPrefSize(192, 125);    // Heuristic
-        solutionContainer.setLayoutX(14);
-        solutionContainer.setLayoutY(192);
-        modelPane.getChildren().add(solutionContainer);
+        // Populate MIP solution method pane.
+        TitledPane mipSolutionContainer = new TitledPane("MIP Solver", mipSolutionPane);
+        mipSolutionContainer.setCollapsible(false);
+        mipSolutionContainer.setPrefSize(192, 95);    // Heuristic
+        mipSolutionContainer.setLayoutX(14);
+        mipSolutionContainer.setLayoutY(158);
+        modelPane.getChildren().add(mipSolutionContainer);
+        
+        // Solution pane.
+        AnchorPane heuristicSolutionPane = new AnchorPane();
+        heuristicSolutionPane.setPrefSize(192, 100);
+        heuristicSolutionPane.setMinSize(0, 0);
+        
+        Label numPairsLabel = new Label("Batch Size");
+        numPairsLabel.setLayoutX(30);
+        numPairsLabel.setLayoutY(8);
+        heuristicSolutionPane.getChildren().add(numPairsLabel);
+        TextField numPairsValue = new TextField("1");
+        numPairsValue.setEditable(true);
+        numPairsValue.setPrefColumnCount(2);
+        numPairsValue.setLayoutX(120);
+        numPairsValue.setLayoutY(4);
+        heuristicSolutionPane.getChildren().add(numPairsValue);
+        
+        // Heuristic
+        Button heuristicSolve = new Button("Solve With Heuristic");
+        heuristicSolve.setLayoutX(30);
+        heuristicSolve.setLayoutY(35);
+        heuristicSolutionPane.getChildren().add(heuristicSolve);
+        heuristicSolve.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                controlActions.runHeuristic(crfValue.getText(), yearValue.getText(), capValue.getText(),numPairsValue.getText());
+            }
+        });
+        
+        // Populate heuristic solution method pane.
+        TitledPane heuristicSolutionContainer = new TitledPane("Heuristic Solver", heuristicSolutionPane);
+        heuristicSolutionContainer.setCollapsible(false);
+        heuristicSolutionContainer.setPrefSize(192, 92);
+        heuristicSolutionContainer.setLayoutX(14);
+        heuristicSolutionContainer.setLayoutY(260);
+        modelPane.getChildren().add(heuristicSolutionContainer);
 
         // Populate results pane.
         // Build solution selection control.
