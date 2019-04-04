@@ -402,7 +402,7 @@ public class Gui extends Application {
         RadioButton capVersion = new RadioButton("Cap");
         RadioButton priceVersion = new RadioButton("Price");
         capVersion.setLayoutX(35);
-        capVersion.setLayoutY(100);
+        capVersion.setLayoutY(96);
         formulationPane.getChildren().add(capVersion);
         capVersion.setSelected(true);
         capVersion.selectedProperty().addListener(new ChangeListener<Boolean>() {
@@ -415,7 +415,7 @@ public class Gui extends Application {
         });
         
         priceVersion.setLayoutX(115);
-        priceVersion.setLayoutY(100);
+        priceVersion.setLayoutY(96);
         formulationPane.getChildren().add(priceVersion);
         priceVersion.selectedProperty().addListener(new ChangeListener<Boolean>() {
             @Override
@@ -440,7 +440,7 @@ public class Gui extends Application {
         mipSolutionPane.setMinSize(0, 0);
         
         Button generateSolutionFile = new Button("Generate MPS File");
-        generateSolutionFile.setLayoutX(35);
+        generateSolutionFile.setLayoutX(33);
         generateSolutionFile.setLayoutY(5);
         mipSolutionPane.getChildren().add(generateSolutionFile);
         generateSolutionFile.setOnAction(new EventHandler<ActionEvent>() {
@@ -458,7 +458,7 @@ public class Gui extends Application {
         
         Label solverLabel = new Label("Solver:");
         solverLabel.setLayoutX(4);
-        solverLabel.setLayoutY(41);
+        solverLabel.setLayoutY(44);
         mipSolutionPane.getChildren().add(solverLabel);
         
         Button cplexSolve = new Button("CPLEX");
@@ -509,7 +509,7 @@ public class Gui extends Application {
         
         // Heuristic
         Button heuristicSolve = new Button("Solve With Heuristic");
-        heuristicSolve.setLayoutX(30);
+        heuristicSolve.setLayoutX(25);
         heuristicSolve.setLayoutY(35);
         heuristicSolutionPane.getChildren().add(heuristicSolve);
         heuristicSolve.setOnAction(new EventHandler<ActionEvent>() {
