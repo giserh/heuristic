@@ -254,13 +254,13 @@ public class ControlActions {
         }
     }
 
-    public void generateMPSFile(String crf, String numYears, String capacityTarget) {
+    public void generateMPSFile(String crf, String numYears, String capacityTarget, int modelVersion) {
         if (scenario != "") {
             System.out.println("Writing MPS File...");
             data.setTargetCaptureAmount(Double.parseDouble(capacityTarget));    //Heuristic
             data.setCrf(Double.parseDouble(crf));   //Heuristic
             data.setProjectLength(Integer.parseInt(numYears));    // Heuristic
-            MPSWriter.writeMPS("mip.mps", data, Double.parseDouble(crf), Double.parseDouble(numYears), Double.parseDouble(capacityTarget), basePath, dataset, scenario);
+            MPSWriter.writeMPS("mip.mps", data, Double.parseDouble(crf), Double.parseDouble(numYears), Double.parseDouble(capacityTarget), basePath, dataset, scenario, modelVersion);
         }
     }
 
@@ -483,7 +483,7 @@ public class ControlActions {
         }
     }
 
-    public void generateMPSFiles(String crf, String numYears, String capacityTarget) {
+    public void generateMPSFiles(String crf, String numYears, String capacityTarget, int modelVersion) {
         Random r = new Random();
 
         Source[] sources = data.getSources();
@@ -510,7 +510,7 @@ public class ControlActions {
             data.setTargetCaptureAmount(Double.parseDouble(capacityTarget));    //Heuristic
             data.setCrf(Double.parseDouble(crf));   //Heuristic
             data.setProjectLength(Integer.parseInt(numYears));    // Heuristic
-            MPSWriter.writeMPS("mip" + i + ".mps", data, Double.parseDouble(crf), Double.parseDouble(numYears), Double.parseDouble(capacityTarget), basePath, dataset, scenario);
+            MPSWriter.writeMPS("mip" + i + ".mps", data, Double.parseDouble(crf), Double.parseDouble(numYears), Double.parseDouble(capacityTarget), basePath, dataset, scenario, modelVersion);
         }
         for (int j = 0; j < sinks.length; j++) {
             sinks[j].setCapacity(sinkCapacity[j]);
@@ -652,7 +652,8 @@ public class ControlActions {
                 // Write to shapefiles.
                 DataInOut.makeShapeFiles(basePath + "/" + dataset + "/Scenarios/" + scenario + "/Results/" + file, soln);
                 DataInOut.makeCandidateShapeFiles(basePath + "/" + dataset + "/Scenarios/" + scenario);
-
+                DataInOut.makeSolutionFile(basePath + "/" + dataset + "/Scenarios/" + scenario + "/Results/" + file, soln);
+                
                 //determineROW(soln, basePath + "/" + dataset + "/Scenarios/" + scenario + "/Results/" + file);
             }
         }

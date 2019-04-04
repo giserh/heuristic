@@ -108,12 +108,13 @@ public class DataStorer {
         graphVertices = (int[]) graphComponents[0];
         graphEdgeCosts = (HashMap<Edge, Double>) graphComponents[1];
         graphEdgeRoutes = (HashMap<Edge, int[]>) graphComponents[2];
-        DataInOut.saveCandidateGraph();
 
         // Make right of way and construction costs
         Object[] costComponents = solver.makeComponentCosts();
         graphEdgeRightOfWayCosts = (HashMap<Edge, Double>) costComponents[0];
         graphEdgeConstructionCosts = (HashMap<Edge, Double>) costComponents[1];
+        
+        DataInOut.saveCandidateGraph();
     }
 
     public void loadNetworkCosts() {
@@ -427,6 +428,14 @@ public class DataStorer {
     // Heuristic
     public double getTargetCaptureAmount() {
         return targetCaptureAmount;
+    }
+    
+    public double getMaxAnnualCapturable() {
+        double maxCap = 0;
+        for (Source src : sources) {
+            maxCap += src.getProductionRate();
+        }
+        return maxCap;
     }
     
     // Heuristic

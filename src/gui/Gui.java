@@ -446,7 +446,13 @@ public class Gui extends Application {
         generateSolutionFile.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
-                controlActions.generateMPSFile(crfValue.getText(), yearValue.getText(), capValue.getText());
+                int modelVersion = 0;
+                if (capVersion.isSelected()) {
+                    modelVersion = 1;
+                } else if (priceVersion.isSelected()) {
+                    modelVersion = 2;
+                }
+                controlActions.generateMPSFile(crfValue.getText(), yearValue.getText(), capValue.getText(), modelVersion);
             }
         });
         

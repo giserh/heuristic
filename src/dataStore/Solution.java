@@ -21,7 +21,7 @@ public class Solution {
     private HashMap<Edge, Double> edgeCosts;
     
     // Other.
-    private double targetCaptureAmountPerYear;
+    private double captureAmountPerYear;
     private int projectLength;
     private double crf;
     
@@ -100,9 +100,9 @@ public class Solution {
         this.edgeCosts = edgeCosts;
     }
     
-    public void setTargetCaptureAmountPerYear(double targetCaptureAmount) {
-        this.targetCaptureAmountPerYear = targetCaptureAmount;
-    }
+    //public void setTargetCaptureAmountPerYear(double targetCaptureAmount) {
+    //    this.captureAmountPerYear = targetCaptureAmount;
+    //}
     
     public void setProjectLength(int projectLength) {
         this.projectLength = projectLength;
@@ -164,6 +164,10 @@ public class Solution {
         return amountCaptured * projectLength;
     }
     
+    public double getAnnualCaptureAmount() {
+        return captureAmountPerYear;
+    }
+    
     public int getNumEdgesOpened() {
         return edgeTransportAmounts.keySet().size();
     }
@@ -185,7 +189,7 @@ public class Solution {
     }
     
     public double getUnitCaptureCost() {
-        return getTotalCaptureCost() / (targetCaptureAmountPerYear * projectLength);
+        return getTotalCaptureCost() / (captureAmountPerYear * projectLength);
     }
     
     public double getTotalStorageCost() {
@@ -197,7 +201,7 @@ public class Solution {
     }
     
     public double getUnitStorageCost() {
-        return getTotalStorageCost() / (targetCaptureAmountPerYear * projectLength);
+        return getTotalStorageCost() / (captureAmountPerYear * projectLength);
     }
     
     public double getTotalTransportCost() {
@@ -209,7 +213,7 @@ public class Solution {
     }
     
     public double getUnitTransportCost() {
-        return getTotalTransportCost() / (targetCaptureAmountPerYear * projectLength);
+        return getTotalTransportCost() / (captureAmountPerYear * projectLength);
     }
 
     public double getTotalCost() {
