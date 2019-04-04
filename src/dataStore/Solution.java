@@ -39,6 +39,7 @@ public class Solution {
             sourceCaptureAmounts.put(src, 0.0);
         }
         sourceCaptureAmounts.put(src, sourceCaptureAmounts.get(src) + captureAmount);
+        captureAmountPerYear += captureAmount;
     }
     
     public void addSourceCostComponent(Source src, double cost) {
@@ -189,6 +190,7 @@ public class Solution {
     }
     
     public double getUnitCaptureCost() {
+        System.out.println(captureAmountPerYear);
         return getTotalCaptureCost() / (captureAmountPerYear * projectLength);
     }
     
