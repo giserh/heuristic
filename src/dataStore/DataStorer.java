@@ -90,9 +90,11 @@ public class DataStorer {
         loadNetworkCosts();
 
         Object[] pathDetails = solver.generateAllPairShortestPaths();
-        shortestPaths = (int[][]) pathDetails[0];
-        shortestPathCosts = (double[]) pathDetails[1];
-        DataInOut.saveShortestPathsNetwork();
+        if (pathDetails != null) {
+            shortestPaths = (int[][]) pathDetails[0];
+            shortestPathCosts = (double[]) pathDetails[1];
+            DataInOut.saveShortestPathsNetwork();
+        }
     }
 
     public void generateDelaunayPairs() {
@@ -103,18 +105,20 @@ public class DataStorer {
     public void generateCandidateGraph() {
         loadNetworkCosts();
         generateDelaunayPairs();
-        
-        Object[] graphComponents = solver.generateDelaunayCandidateGraph();
-        graphVertices = (int[]) graphComponents[0];
-        graphEdgeCosts = (HashMap<Edge, Double>) graphComponents[1];
-        graphEdgeRoutes = (HashMap<Edge, int[]>) graphComponents[2];
 
-        // Make right of way and construction costs
-        Object[] costComponents = solver.makeComponentCosts();
-        graphEdgeRightOfWayCosts = (HashMap<Edge, Double>) costComponents[0];
-        graphEdgeConstructionCosts = (HashMap<Edge, Double>) costComponents[1];
-        
-        DataInOut.saveCandidateGraph();
+        Object[] graphComponents = solver.generateDelaunayCandidateGraph();
+        if (graphComponents != null) {
+            graphVertices = (int[]) graphComponents[0];
+            graphEdgeCosts = (HashMap<Edge, Double>) graphComponents[1];
+            graphEdgeRoutes = (HashMap<Edge, int[]>) graphComponents[2];
+
+            // Make right of way and construction costs
+            Object[] costComponents = solver.makeComponentCosts();
+            graphEdgeRightOfWayCosts = (HashMap<Edge, Double>) costComponents[0];
+            graphEdgeConstructionCosts = (HashMap<Edge, Double>) costComponents[1];
+
+            DataInOut.saveCandidateGraph();
+        }
     }
 
     public void loadNetworkCosts() {
