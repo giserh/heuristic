@@ -388,16 +388,16 @@ public class Gui extends Application {
         yearValue.setLayoutY(34);
         formulationPane.getChildren().add(yearValue);
 
-        Label capLabel = new Label("Capture Target (MT/y)");
-        capLabel.setLayoutX(4);
-        capLabel.setLayoutY(68);
-        formulationPane.getChildren().add(capLabel);
-        TextField capValue = new TextField("15");
-        capValue.setEditable(true);
-        capValue.setPrefColumnCount(2);
-        capValue.setLayoutX(143);
-        capValue.setLayoutY(64);
-        formulationPane.getChildren().add(capValue);
+        Label paramLabel = new Label("Capture Target (MT/y)");
+        paramLabel.setLayoutX(4);
+        paramLabel.setLayoutY(68);
+        formulationPane.getChildren().add(paramLabel);
+        TextField paramValue = new TextField("15");
+        paramValue.setEditable(true);
+        paramValue.setPrefColumnCount(2);
+        paramValue.setLayoutX(143);
+        paramValue.setLayoutY(64);
+        formulationPane.getChildren().add(paramValue);
         
         RadioButton capVersion = new RadioButton("Cap");
         RadioButton priceVersion = new RadioButton("Price");
@@ -410,6 +410,7 @@ public class Gui extends Application {
             public void changed(ObservableValue<? extends Boolean> selected, Boolean oldVal, Boolean show) {
                 if (!oldVal) {
                     priceVersion.setSelected(false);
+                    paramLabel.setText("Capture Target (MT/y)");
                 }
             }
         });
@@ -422,6 +423,7 @@ public class Gui extends Application {
             public void changed(ObservableValue<? extends Boolean> selected, Boolean oldVal, Boolean show) {
                 if (!oldVal) {
                     capVersion.setSelected(false);
+                    paramLabel.setText("Tax/Credit ($/t)");
                 }
             }
         });
@@ -452,7 +454,7 @@ public class Gui extends Application {
                 } else if (priceVersion.isSelected()) {
                     modelVersion = 2;
                 }
-                controlActions.generateMPSFile(crfValue.getText(), yearValue.getText(), capValue.getText(), modelVersion);
+                controlActions.generateMPSFile(crfValue.getText(), yearValue.getText(), paramValue.getText(), modelVersion);
             }
         });
         
@@ -518,10 +520,12 @@ public class Gui extends Application {
                 int modelVersion = 0;
                 if (capVersion.isSelected()) {
                     modelVersion = 1;
+                    controlActions.heuristicSolve(crfValue.getText(), yearValue.getText(), paramValue.getText(),numPairsValue.getText(), modelVersion);
                 } else if (priceVersion.isSelected()) {
                     modelVersion = 2;
+                    //controlActions.heuristicSolve(crfValue.getText(), yearValue.getText(), paramValue.getText(),numPairsValue.getText(), modelVersion);
+                    controlActions.runPriceSimulation(crfValue.getText(), yearValue.getText(), paramValue.getText(),numPairsValue.getText(), modelVersion);
                 }
-                controlActions.runHeuristic(crfValue.getText(), yearValue.getText(), capValue.getText(),numPairsValue.getText(), modelVersion);
             }
         });
         

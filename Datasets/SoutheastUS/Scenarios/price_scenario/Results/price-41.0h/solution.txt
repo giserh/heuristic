@@ -1,0 +1,6 @@
+crf:	0.1
+captureTarget:	15.0
+projectLength:	30
+SourceCell	SourceLabel	CaptureAmount	Cost
+Sink	SinkLabel	InjectAmount	Cost
+EdgeSrc	EdgeSnk	FlowAmount	Cost

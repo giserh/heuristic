@@ -190,7 +190,9 @@ public class Solution {
     }
     
     public double getUnitCaptureCost() {
-        System.out.println(captureAmountPerYear);
+        if (captureAmountPerYear == 0) {
+            return 0;
+        }
         return getTotalCaptureCost() / (captureAmountPerYear * projectLength);
     }
     
@@ -203,6 +205,9 @@ public class Solution {
     }
     
     public double getUnitStorageCost() {
+        if (captureAmountPerYear == 0) {
+            return 0;
+        }
         return getTotalStorageCost() / (captureAmountPerYear * projectLength);
     }
     
@@ -215,6 +220,9 @@ public class Solution {
     }
     
     public double getUnitTransportCost() {
+        if (captureAmountPerYear == 0) {
+            return 0;
+        }
         return getTotalTransportCost() / (captureAmountPerYear * projectLength);
     }
 

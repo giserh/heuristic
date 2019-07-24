@@ -414,7 +414,6 @@ public class MPSWriter {
             bw.write(problemFormulation.toString());
         } catch (IOException e) {
             System.out.println(e.getMessage());
-
         }
     }
 

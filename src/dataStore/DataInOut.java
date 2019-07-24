@@ -394,6 +394,36 @@ public class DataInOut {
             System.out.println("Not Yet Generated.");
         }
     }
+    
+    public static double[] loadPrices() {
+        // Check if file exists
+        String pricesPath = basePath + "/" + dataset + "/Scenarios/" + scenario + "/priceInput.csv";
+        if (new File(pricesPath).exists()) {
+            // Load from file.
+            try (BufferedReader br = new BufferedReader(new FileReader(pricesPath))) {
+                br.readLine();
+                String line = br.readLine();
+
+                String[] elements = line.split(",");
+                double min = Double.parseDouble(elements[0]);
+                double max = Double.parseDouble(elements[1]);
+                double step = Double.parseDouble(elements[2]);
+
+                // Make prices array
+                int num = (int) Math.floor((max - min + 1) / step);
+                double[] prices = new double[num];
+                for (int i = 0; i < prices.length; i++) {
+                    prices[i] = min + i * step;
+                }
+                return prices;
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
 
     public static void saveShortestPathsNetwork() {
         int[][] shortestPaths = data.getShortestPaths();
@@ -1046,6 +1076,14 @@ public class DataInOut {
                 bw.write(edgeTransportAmounts.get(edg) + ",");
                 bw.write(edgeCosts.get(edg) + "\n");
             }
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+    
+    public static void makePriceAggregationFile(String path, String content) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(path))) {
+            bw.write(content);
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }

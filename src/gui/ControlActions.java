@@ -12,9 +12,11 @@ import dataStore.Sink;
 import dataStore.Solution;
 import dataStore.Source;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -264,14 +266,66 @@ public class ControlActions {
         }
     }
 
+    // Price simulation
+    public void runPriceSimulation(String crf, String numYears, String inputPrice, String numPairs, int modelVersion) {
+        // Load simulation parmeters.
+        double prices[] = DataInOut.loadPrices();
+        if (prices == null) {
+            prices = new double[] {Double.parseDouble(inputPrice)};
+        }
+        
+        // Save original injection costs.
+        Sink[] sinks = data.getSinks();
+        double[] originalInjectionCosts = new double[sinks.length];
+        for (int i = 0; i < sinks.length; i++) {
+            originalInjectionCosts[i] = sinks[i].getInjectionCost();
+        }
+        
+        // Create aggregation file.
+        StringBuilder aggregateResults = new StringBuilder("");
+        aggregateResults.append("CO2 Price,Captured Amount,# Opened Sources,# Opened Sinks,Network Length,");
+        aggregateResults.append("Total Cost ($M/yr),Total Capture Cost ($M/yr),Total Transport Cost ($M/yr),Total Storage Cost ($M/yr),");
+        aggregateResults.append("Total Unit Cost($/tCO2),Unit Capture Cost($/tCO2),Unit Transport Cost($/tCO2),Unit Storage Cost($/tCO2)\n");
+        
+        for (double price : prices) {
+            // Set new injection costs.
+            for (int i = 0; i < sinks.length; i++) {
+                sinks[i].setInjectionCost(originalInjectionCosts[i] - price);
+            }
+            
+            // Run solver.
+            File solutionPriceDirectory = new File(basePath + "/" + dataset + "/Scenarios/" + scenario + "/Results/" + "price-" + price + "h");
+            solutionPriceDirectory.mkdir();
+            runHeuristic(crf, numYears, inputPrice, numPairs, modelVersion, solutionPriceDirectory);
+            
+            // Create shapefiles.
+            Solution soln = DataInOut.loadHeuristicSolution(basePath + "/" + dataset + "/Scenarios/" + scenario + "/Results/" + "price-" + price + "h");
+            DataInOut.makeShapeFiles(basePath + "/" + dataset + "/Scenarios/" + scenario + "/Results/" + "price-" + price + "h", soln);
+            DataInOut.makeCandidateShapeFiles(basePath + "/" + dataset + "/Scenarios/" + scenario);
+            DataInOut.makeSolutionFile(basePath + "/" + dataset + "/Scenarios/" + scenario + "/Results/" + "price-" + price + "h", soln);
+            
+            // Update aggregation file.
+            aggregateResults.append(price + "," + soln.getAnnualCaptureAmount() + "," + soln.getNumOpenedSources() + "," + soln.getNumOpenedSinks() + ",TBD,");
+            aggregateResults.append(soln.getTotalCost() + "," + soln.getTotalCaptureCost() + "," + soln.getTotalTransportCost() + "," + soln.getTotalStorageCost() + ",");
+            aggregateResults.append(soln.getUnitTotalCost() + "," + soln.getUnitCaptureCost() + "," + soln.getUnitTransportCost() + "," + soln.getUnitStorageCost() + "\n");
+        }
+        
+        // Write aggregation file.
+        DataInOut.makePriceAggregationFile(basePath + "/" + dataset + "/Scenarios/" + scenario + "/Results/aggregateResults.csv", aggregateResults.toString());
+    }
+    
     // Heuristic
-    public void runHeuristic(String crf, String numYears, String capacityTarget, String numPairs, int modelVersion) {
+    public void heuristicSolve(String crf, String numYears, String capacityTarget, String numPairs, int modelVersion) {
         DateFormat dateFormat = new SimpleDateFormat("ddMMyyy-HHmmssss");
         Date date = new Date();
         String run = "run" + dateFormat.format(date) + "h";
         File solutionDirectory = new File(basePath + "/" + dataset + "/Scenarios/" + scenario + "/Results/" + run);
         solutionDirectory.mkdir();
         
+        runHeuristic(crf, numYears, capacityTarget, numPairs, modelVersion, solutionDirectory);
+    }
+    
+    private void runHeuristic(String crf, String numYears, String capacityTarget, String numPairs, int modelVersion, File directory) {
         // Get model data
         data.setTargetCaptureAmount(Double.parseDouble(capacityTarget));
         data.setCrf(Double.parseDouble(crf));
@@ -282,9 +336,8 @@ public class ControlActions {
         heuristic.solve(Integer.parseInt(numPairs), modelVersion);
         
         // Save solution
-        DataInOut.saveHeuristicSolution(solutionDirectory, heuristic);
+        DataInOut.saveHeuristicSolution(directory, heuristic);
     }
-    
 
     public void runCPLEX() {
         // Check if CPLEX exists.
