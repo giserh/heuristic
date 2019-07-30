@@ -181,7 +181,7 @@ public class Solution {
         return crf;
     }
     
-    public double getTotalCaptureCost() {
+    public double getTotalAnnualCaptureCost() {
         double cost = 0;
         for (Source src : sourceCosts.keySet()) {
             cost += sourceCosts.get(src);
@@ -193,10 +193,10 @@ public class Solution {
         if (captureAmountPerYear == 0) {
             return 0;
         }
-        return getTotalCaptureCost() / (captureAmountPerYear * projectLength);
+        return getTotalAnnualCaptureCost() / captureAmountPerYear;
     }
     
-    public double getTotalStorageCost() {
+    public double getTotalAnnualStorageCost() {
         double cost = 0;
         for (Sink snk : sinkCosts.keySet()) {
             cost += sinkCosts.get(snk);
@@ -208,10 +208,10 @@ public class Solution {
         if (captureAmountPerYear == 0) {
             return 0;
         }
-        return getTotalStorageCost() / (captureAmountPerYear * projectLength);
+        return getTotalAnnualStorageCost() / captureAmountPerYear;
     }
     
-    public double getTotalTransportCost() {
+    public double getTotalAnnualTransportCost() {
         double cost = 0;
         for (Edge edg : edgeCosts.keySet()) {
             cost += edgeCosts.get(edg);
@@ -223,11 +223,11 @@ public class Solution {
         if (captureAmountPerYear == 0) {
             return 0;
         }
-        return getTotalTransportCost() / (captureAmountPerYear * projectLength);
+        return getTotalAnnualTransportCost() / captureAmountPerYear;
     }
 
     public double getTotalCost() {
-        return getTotalCaptureCost() + getTotalStorageCost() + getTotalTransportCost();
+        return getTotalAnnualCaptureCost() + getTotalAnnualStorageCost() + getTotalAnnualTransportCost();
     }
     
     public double getUnitTotalCost() {
