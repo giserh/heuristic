@@ -35,10 +35,10 @@ public class HeuristicEdge {
         for (int c = 0; c < linearComponents.length; c++) {
             double maxCap = Double.MAX_VALUE;
             if (c < linearComponents.length - 1) {
-                double alpha1 = linearComponents[c].getConAlpha() + linearComponents[c].getRowAlpha();
-                double beta1 = linearComponents[c].getConBeta() + linearComponents[c].getRowBeta();
-                double alpha2 = linearComponents[c + 1].getConAlpha() + linearComponents[c + 1].getRowAlpha();
-                double beta2 = linearComponents[c + 1].getConBeta() + linearComponents[c + 1].getRowBeta();
+                double alpha1 = linearComponents[c].getConSlope() + linearComponents[c].getRowSlope();
+                double beta1 = linearComponents[c].getConIntercept() + linearComponents[c].getRowIntercept();
+                double alpha2 = linearComponents[c + 1].getConSlope() + linearComponents[c + 1].getRowSlope();
+                double beta2 = linearComponents[c + 1].getConIntercept() + linearComponents[c + 1].getRowIntercept();
                 maxCap = (beta2 - beta1) / (alpha1 - alpha2);
             }
             capacities[c + 1] = maxCap;
@@ -51,14 +51,14 @@ public class HeuristicEdge {
         // Populate buildCost
         buildCost = new double[numPossibleSizes + 1];
         for (int c = 0; c < linearComponents.length; c++) {
-            double cost = (linearComponents[c].getConBeta() * edgeConstructionCosts.get(new Edge(v1, v2)) + linearComponents[c].getRowBeta() * edgeRightOfWayCosts.get(new Edge(v1, v2))) * data.getCrf();
+            double cost = (linearComponents[c].getConIntercept() * edgeConstructionCosts.get(new Edge(v1, v2)) + linearComponents[c].getRowIntercept() * edgeRightOfWayCosts.get(new Edge(v1, v2))) * data.getCrf();
             buildCost[c + 1] = cost;
         }
 
         // Populate transportCost
         transportCost = new double[numPossibleSizes + 1];
         for (int c = 0; c < linearComponents.length; c++) {
-            double cost = (linearComponents[c].getConAlpha() * edgeConstructionCosts.get(new Edge(v1, v2)) + linearComponents[c].getRowAlpha() * edgeRightOfWayCosts.get(new Edge(v1, v2))) * data.getCrf() / .93;    //.93 = pipeline utilization
+            double cost = (linearComponents[c].getConSlope() * edgeConstructionCosts.get(new Edge(v1, v2)) + linearComponents[c].getRowSlope() * edgeRightOfWayCosts.get(new Edge(v1, v2))) * data.getCrf() / .93;    //.93 = pipeline utilization
             transportCost[c + 1] = cost;
         }
     }

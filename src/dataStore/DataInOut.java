@@ -161,7 +161,7 @@ public class DataInOut {
                 line = br.readLine();
             }
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            rightOfWayCosts = null;
         }
 
         data.setAdjacencyCosts(adjacencyCosts);
@@ -221,21 +221,37 @@ public class DataInOut {
     }
 
     private static void loadTransport() {
-        String tranportPath = basePath + "/" + dataset + "/Scenarios/" + scenario + "/Transport/Linear.txt";
-        try (BufferedReader br = new BufferedReader(new FileReader(tranportPath))) {
+        String transportPath = basePath + "/" + dataset + "/Scenarios/" + scenario + "/Transport/Linear.txt";
+        try (BufferedReader br = new BufferedReader(new FileReader(transportPath))) {
             br.readLine();
             String line = br.readLine();
             ArrayList<LinearComponent> linearComponents = new ArrayList<>();
             while (line != null) {
                 String[] elements = line.split("\\s+");
                 LinearComponent linearComponent = new LinearComponent(data);
-                linearComponent.setConAlpha(Double.parseDouble(elements[1]));
-                linearComponent.setConBeta(Double.parseDouble(elements[2]));
-                linearComponent.setRowAlpha(Double.parseDouble(elements[3]));
-                linearComponent.setRowBeta(Double.parseDouble(elements[4]));
+                linearComponent.setConSlope(Double.parseDouble(elements[1]));
+                linearComponent.setConIntercept(Double.parseDouble(elements[2]));
+                if (elements.length > 3) {
+                    linearComponent.setRowSlope(Double.parseDouble(elements[3]));
+                    linearComponent.setRowIntercept(Double.parseDouble(elements[4]));
+                }
                 linearComponents.add(linearComponent);
                 line = br.readLine();
             }
+
+            // Set max pipeline capacities.
+            for (int c = 0; c < linearComponents.size(); c++) {
+                double maxCap = data.getMaxAnnualCapturable();
+                if (c < linearComponents.size() - 1) {
+                    double slope1 = linearComponents.get(c).getConSlope() + linearComponents.get(c).getRowSlope();
+                    double intercept1 = linearComponents.get(c).getConIntercept() + linearComponents.get(c).getRowIntercept();
+                    double slope2 = linearComponents.get(c + 1).getConSlope() + linearComponents.get(c + 1).getRowSlope();
+                    double intercept2 = linearComponents.get(c + 1).getConIntercept() + linearComponents.get(c + 1).getRowIntercept();
+                    maxCap = (intercept2 - intercept1) / (slope1 - slope2);
+                }
+                linearComponents.get(c).setMaxCapacity(maxCap);
+            }
+
             data.setLinearComponents(linearComponents.toArray(new LinearComponent[0]));
         } catch (IOException e) {
             System.out.println(e.getMessage());

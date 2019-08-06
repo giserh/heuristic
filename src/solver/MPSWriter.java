@@ -19,7 +19,6 @@ public class MPSWriter {
 
     public static void writeMPS(String fileName, DataStorer data, double crf, double numYears, double capacityTarget, String basePath, String dataset, String scenario, int modelVersion) {
         //model version: 1 - cap, 2 - price.
-        double pipeUtilization = .93;
 
         // Collect data
         Source[] sources = data.getSources();
@@ -44,6 +43,12 @@ public class MPSWriter {
         HashMap<String, String> constraintToSign = new HashMap<>();
         HashMap<String, Double> constraintRHS = new HashMap<>();
         HashMap<String, VariableBound> variableBounds = new HashMap<>();
+
+        // Set pipe capacity factor if right of way costs are provided.
+        double pipeUtilization = 1.0;
+        if (linearComponents[0].getRowSlope() != 0) {
+            pipeUtilization = .93;
+        }
 
         // Initialize cell/index maps
         for (int i = 0; i < sources.length; i++) {
@@ -133,20 +138,10 @@ public class MPSWriter {
                     }
                     contVariableToConstraints.get(p[vertexCellToIndex.get(src)][vertexCellToIndex.get(dest)][c]).add(new ConstraintTerm(constraint, 1));
 
-                    // Get max pipeline capacity.
-                    double maxCap = data.getMaxAnnualCapturable();
-                    if (c < linearComponents.length - 1) {
-                        double alpha1 = linearComponents[c].getConAlpha() + linearComponents[c].getRowAlpha();
-                        double beta1 = linearComponents[c].getConBeta() + linearComponents[c].getRowBeta();
-                        double alpha2 = linearComponents[c + 1].getConAlpha() + linearComponents[c + 1].getRowAlpha();
-                        double beta2 = linearComponents[c + 1].getConBeta() + linearComponents[c + 1].getRowBeta();
-                        maxCap = (beta2 - beta1) / (alpha1 - alpha2);
-                    }
-
                     if (!intVariableToConstraints.containsKey(y[vertexCellToIndex.get(src)][vertexCellToIndex.get(dest)][c])) {
                         intVariableToConstraints.put(y[vertexCellToIndex.get(src)][vertexCellToIndex.get(dest)][c], new HashSet<ConstraintTerm>());
                     }
-                    intVariableToConstraints.get(y[vertexCellToIndex.get(src)][vertexCellToIndex.get(dest)][c]).add(new ConstraintTerm(constraint, -maxCap));
+                    intVariableToConstraints.get(y[vertexCellToIndex.get(src)][vertexCellToIndex.get(dest)][c]).add(new ConstraintTerm(constraint, - linearComponents[c].getMaxCapacity()));
 
                     constraintToSign.put(constraint, "L");
                     constraintRHS.put(constraint, 0.0);
@@ -282,11 +277,11 @@ public class MPSWriter {
         }
 
         String constraint;
-        
+
         // Set amount of CO2 to capture
         if (modelVersion == 1) {
             constraintCounter = 1;
-             constraint = "G" + constraintCounter++;
+            constraint = "G" + constraintCounter++;
             for (Source src : sources) {
                 if (!contVariableToConstraints.containsKey(a[sourceCellToIndex.get(src)])) {
                     contVariableToConstraints.put(a[sourceCellToIndex.get(src)], new HashSet<ConstraintTerm>());
@@ -314,7 +309,7 @@ public class MPSWriter {
         contVariableToConstraints.get("modelVersion").add(new ConstraintTerm("H4", 1));
         constraintToSign.put("H4", "E");
         constraintRHS.put("H4", (double) modelVersion);
-        
+
         // Make objective
         constraint = "OBJ";
         for (Source src : sources) {
@@ -335,13 +330,13 @@ public class MPSWriter {
                     if (!intVariableToConstraints.containsKey(y[vertexCellToIndex.get(vertex)][vertexCellToIndex.get(neighbor)][c])) {
                         intVariableToConstraints.put(y[vertexCellToIndex.get(vertex)][vertexCellToIndex.get(neighbor)][c], new HashSet<ConstraintTerm>());
                     }
-                    double coefficient = (linearComponents[c].getConBeta() * edgeConstructionCosts.get(new Edge(vertex, neighbor)) + linearComponents[c].getRowBeta() * edgeRightOfWayCosts.get(new Edge(vertex, neighbor))) * crf;
+                    double coefficient = (linearComponents[c].getConIntercept() * edgeConstructionCosts.get(new Edge(vertex, neighbor)) + linearComponents[c].getRowIntercept() * edgeRightOfWayCosts.get(new Edge(vertex, neighbor))) * crf;
                     intVariableToConstraints.get(y[vertexCellToIndex.get(vertex)][vertexCellToIndex.get(neighbor)][c]).add(new ConstraintTerm(constraint, coefficient));
 
                     if (!contVariableToConstraints.containsKey(p[vertexCellToIndex.get(vertex)][vertexCellToIndex.get(neighbor)][c])) {
                         contVariableToConstraints.put(p[vertexCellToIndex.get(vertex)][vertexCellToIndex.get(neighbor)][c], new HashSet<ConstraintTerm>());
                     }
-                    coefficient = (linearComponents[c].getConAlpha() * edgeConstructionCosts.get(new Edge(vertex, neighbor)) + linearComponents[c].getRowAlpha() * edgeRightOfWayCosts.get(new Edge(vertex, neighbor))) * crf / pipeUtilization;
+                    coefficient = (linearComponents[c].getConSlope() * edgeConstructionCosts.get(new Edge(vertex, neighbor)) + linearComponents[c].getRowSlope() * edgeRightOfWayCosts.get(new Edge(vertex, neighbor))) * crf / pipeUtilization;
                     contVariableToConstraints.get(p[vertexCellToIndex.get(vertex)][vertexCellToIndex.get(neighbor)][c]).add(new ConstraintTerm(constraint, coefficient));
                 }
             }
